@@ -1,0 +1,6 @@
+# macos files
+.DS_Store
+._*
+
+# ignore data for now
+csv/
