@@ -135,7 +135,7 @@ foreach(range(0, 6) as $a2_variable) {
 
 <tr>
 <td class="tg-yw4p" colspan="6"><B>Pressure Levels:</b>
-0 = 1000mb, 1 = 925mb, 2 = 850mb, 3 = 700mb, 4 = 600mb, 5 = 500mb, 
+0 = 1000mb, 1 = 925mb, 2 = 850mb, 3 = 700mb, 4 = 600mb, 5 = 500mb,
 6 = 400mb, 7 = 300mb, 8 = 250mb, 9 = 200mb, 10 = 150mb, 11 = 100mb, 12 = 70mb,
 13 = 50mb, 14 = 30mb, 15 = 20mb, 16 = 10mb <br>
 <b>Enter Pressure Level for Height Analysis:</b> (see above)&nbsp;&nbsp;<input type="number" name="a2_heightlev" min="0" max="16" style="width: 50px;"<?php if(empty($_POST['a2_heightlev'])) {echo "value=\"5\"";} else {echo "value=\"" . $_POST['a2_heightlev'] . "\"";}?>>
@@ -205,7 +205,7 @@ foreach(range(0, 1) as $a2_pearsonrms) {
 
 <tr>
 <td class="tg-yw4t" colspan="6">
-<B>EOF Parameters</b> 
+<B>EOF Parameters</b>
 
 
 &nbsp;&nbsp;&nbsp;Choose Theme (1-5 [see list above: 5 = SST]):
@@ -269,7 +269,7 @@ foreach(range(0, 3) as $a2_justcorrelations) {
 
 
 <br><br>Note 1: Make sure that your match year is not for a month that is in the future!
-&nbsp;&nbsp;&nbsp;Note 2: All weightings will be ignored. 
+&nbsp;&nbsp;&nbsp;Note 2: All weightings will be ignored.
 &nbsp;&nbsp;&nbsp;Note 3: Make sure that all years are different.
 
 </td>
@@ -654,7 +654,7 @@ if($a2_matchesexist){
     print 'There is another process running, please try again in a few minutes.';
     echo '<br>';
   }
-} 
+}
 
 
 
@@ -670,17 +670,24 @@ if($a2_matchesexist){
 
           //exec("/bin/echo \"$a2_year $a2_layer\" 2>&1", $a2_output);
 
-          putenv("NCARG_ROOT=/home/bbrettschneider/ncl-6.3.0");
-          putenv("NCARG_NCARG=/home/bbrettschneider/ncl-6.3.0/lib/ncarg");
-          putenv("NCARG_COLORMAPS=/home/bbrettschneider/ncl-6.3.0/lib/ncarg/colormaps");
+          $NCL_HOME = getenv("NCL_HOME");
+
+          putenv("NCARG_ROOT=".$NCL_HOME."/ncl-6.3.0");
+          putenv("NCARG_NCARG=".$NCL_HOME."/ncl-6.3.0/lib/ncarg");
+          putenv("NCARG_COLORMAPS=".$NCL_HOME."/ncl-6.3.0/lib/ncarg/colormaps");
 
           if ($a2_indexchoice>=4) $a2_eofbox = 1;
           if ($a2_indexchoice<=3) $a2_eofbox = 0;
-          if ($a2_pearsonrms == 0) exec("/home/bbrettschneider/ncl-6.3.0/bin/ncl -n -Q fromweb=\"1\"  txtareayesno=\"2\"  eofbox=\"$a2_eofbox\" eofnlat=\"$a2_eofnlat\" eofslat=\"$a2_eofslat\" eofllon=\"$a2_eofllon\" eofrlon=\"$a2_eofrlon\" eofvariable=\"$a2_eofvariable\" detrend=\"$a2_detrend\" howmanyyears=\"$a2_howmanyyears\" heightlev=\"$a2_heightlev\" templev=\"$a2_templev\" seaiceyesno=\"0\" manualyesno=\"$a2_manualyesno\" manyear1=\"$a2_manyear1\" manyear2=\"$a2_manyear2\" manyear3=\"$a2_manyear3\" manyear4=\"$a2_manyear4\" manyear5=\"$a2_manyear5\" variable=\"$a2_variable\" useryear=\"$a2_useryear\" fmnths=\"$a2_fmnths\" fmnths2=\"$a2_fmnths2\" slpwgt1=\"$a2_slpwgt1\" h500wgt1=\"$a2_h500wgt1\" t2mwgt1=\"$a2_t2mwgt1\" t925wgt1=\"$a2_t925wgt1\" sstwgt1=\"$a2_sstwgt1\" icewgt1=\"100\" indexchoice=\"$a2_indexchoice\" autoWgt=\"$a2_autoWgt\" y1=\"$a2_y1\" y2=\"$a2_y2\" x1=\"$a2_x1\" x2=\"$a2_x2\" AK1=\"$a2_AK1\" AK2=\"$a2_AK2\" AK3=\"$a2_AK3\" AK4=\"$a2_AK4\" usermonth=\"$a2_usermonth\" exmth=\"$a2_exmth\" justcorrelations=\"$a2_justcorrelations\" ID=\"$a2_ID\" specialnum=\"99\" /home/bbrettschneider/SeaIceSelectPercents4bRMS.ncl", $a2_output);
 
-          if ($a2_pearsonrms == 1){
-            if ($a2_fmnths2 == 1){
-              exec("/home/bbrettschneider/ncl-6.3.0/bin/ncl -n -Q fromweb=\"1\" eofbox=\"$a2_eofbox\" eofnlat=\"$a2_eofnlat\" eofslat=\"$a2_eofslat\" eofllon=\"$a2_eofllon\" eofrlon=\"$a2_eofrlon\" eofvariable=\"$a2_eofvariable\" detrend=\"$a2_detrend\" howmanyyears=\"$a2_howmanyyears\" heightlev=\"$a2_heightlev\" templev=\"$a2_templev\" seaiceyesno=\"0\" manualyesno=\"$a2_manualyesno\" manyear1=\"$a2_manyear1\" manyear2=\"$a2_manyear2\" manyear3=\"$a2_manyear3\" manyear4=\"$a2_manyear4\" manyear5=\"$a2_manyear5\" variable=\"$a2_variable\" useryear=\"$a2_useryear\" fmnths=\"$a2_fmnths\" fmnths2=\"$a2_fmnths2\" slpwgt1=\"$a2_slpwgt1\" h500wgt1=\"$a2_h500wgt1\" t2mwgt1=\"$a2_t2mwgt1\" t925wgt1=\"$a2_t925wgt1\" sstwgt1=\"$a2_sstwgt1\" icewgt1=\"100\" indexchoice=\"$a2_indexchoice\" autoWgt=\"$a2_autoWgt\" y1=\"$a2_y1\" y2=\"$a2_y2\" x1=\"$a2_x1\" x2=\"$a2_x2\" AK1=\"$a2_AK1\" AK2=\"$a2_AK2\" AK3=\"$a2_AK3\" AK4=\"$a2_AK4\" usermonth=\"$a2_usermonth\" exmth=\"$a2_exmth\" ID=\"$a2_ID\" specialnum=\"99\" /home/bbrettschneider/SeaIceSelectPercents4bPearson.ncl", $a2_output);
+          $exec_string = $NCL_HOME."/ncl-6.3.0/bin/ncl -n -Q fromweb=\"1\"  txtareayesno=\"2\"  eofbox=\"$a2_eofbox\" eofnlat=\"$a2_eofnlat\" eofslat=\"$a2_eofslat\" eofllon=\"$a2_eofllon\" eofrlon=\"$a2_eofrlon\" eofvariable=\"$a2_eofvariable\" detrend=\"$a2_detrend\" howmanyyears=\"$a2_howmanyyears\" heightlev=\"$a2_heightlev\" templev=\"$a2_templev\" seaiceyesno=\"0\" manualyesno=\"$a2_manualyesno\" manyear1=\"$a2_manyear1\" manyear2=\"$a2_manyear2\" manyear3=\"$a2_manyear3\" manyear4=\"$a2_manyear4\" manyear5=\"$a2_manyear5\" variable=\"$a2_variable\" useryear=\"$a2_useryear\" fmnths=\"$a2_fmnths\" fmnths2=\"$a2_fmnths2\" slpwgt1=\"$a2_slpwgt1\" h500wgt1=\"$a2_h500wgt1\" t2mwgt1=\"$a2_t2mwgt1\" t925wgt1=\"$a2_t925wgt1\" sstwgt1=\"$a2_sstwgt1\" icewgt1=\"100\" indexchoice=\"$a2_indexchoice\" autoWgt=\"$a2_autoWgt\" y1=\"$a2_y1\" y2=\"$a2_y2\" x1=\"$a2_x1\" x2=\"$a2_x2\" AK1=\"$a2_AK1\" AK2=\"$a2_AK2\" AK3=\"$a2_AK3\" AK4=\"$a2_AK4\" usermonth=\"$a2_usermonth\" exmth=\"$a2_exmth\" justcorrelations=\"$a2_justcorrelations\" ID=\"$a2_ID\" specialnum=\"99\" ".$NCL_HOME."/SeaIceSelectPercents4bRMS.ncl";
+          print($exec_string);
+          if ($a2_pearsonrms == 0) exec($exec_string, $a2_output);
+
+          if ($a2_pearsonrms == 1) {
+            if ($a2_fmnths2 == 1) {
+              $exec_string = $NCL_HOME."/ncl-6.3.0/bin/ncl -n -Q fromweb=\"1\" eofbox=\"$a2_eofbox\" eofnlat=\"$a2_eofnlat\" eofslat=\"$a2_eofslat\" eofllon=\"$a2_eofllon\" eofrlon=\"$a2_eofrlon\" eofvariable=\"$a2_eofvariable\" detrend=\"$a2_detrend\" howmanyyears=\"$a2_howmanyyears\" heightlev=\"$a2_heightlev\" templev=\"$a2_templev\" seaiceyesno=\"0\" manualyesno=\"$a2_manualyesno\" manyear1=\"$a2_manyear1\" manyear2=\"$a2_manyear2\" manyear3=\"$a2_manyear3\" manyear4=\"$a2_manyear4\" manyear5=\"$a2_manyear5\" variable=\"$a2_variable\" useryear=\"$a2_useryear\" fmnths=\"$a2_fmnths\" fmnths2=\"$a2_fmnths2\" slpwgt1=\"$a2_slpwgt1\" h500wgt1=\"$a2_h500wgt1\" t2mwgt1=\"$a2_t2mwgt1\" t925wgt1=\"$a2_t925wgt1\" sstwgt1=\"$a2_sstwgt1\" icewgt1=\"100\" indexchoice=\"$a2_indexchoice\" autoWgt=\"$a2_autoWgt\" y1=\"$a2_y1\" y2=\"$a2_y2\" x1=\"$a2_x1\" x2=\"$a2_x2\" AK1=\"$a2_AK1\" AK2=\"$a2_AK2\" AK3=\"$a2_AK3\" AK4=\"$a2_AK4\" usermonth=\"$a2_usermonth\" exmth=\"$a2_exmth\" ID=\"$a2_ID\" specialnum=\"99\" ".$NCL_HOME."/SeaIceSelectPercents4bPearson.ncl";
+              print($exec_string);
+              exec($exec_string, $a2_output);
             }
           }
 
@@ -698,16 +705,16 @@ if($a2_matchesexist){
           // these three lines should be removed or commented out to avoid
           // showing the raw system output to the user.
 
-          $linkbig1 =  "/maps/cor_big1.jpg";         
-          $linkbig2 =  "/maps/cor_big2.jpg"; 
-          $linkbig3 =  "/maps/MultipleR.jpg"; 
-          $linkbig4 =  "/maps/SingleRSLP.jpg"; 
-          $linkbig5 =  "/maps/SingleRH500.jpg"; 
-          $linkbig6 =  "/maps/SingleRT2M.jpg"; 
-          $linkbig7 =  "/maps/SingleRT925.jpg"; 
-          $linkbig8 =  "/maps/SingleRSST.jpg"; 
-          $width = "646";        
-          $height = "800";        
+          $linkbig1 =  "/maps/cor_big1.jpg";
+          $linkbig2 =  "/maps/cor_big2.jpg";
+          $linkbig3 =  "/maps/MultipleR.jpg";
+          $linkbig4 =  "/maps/SingleRSLP.jpg";
+          $linkbig5 =  "/maps/SingleRH500.jpg";
+          $linkbig6 =  "/maps/SingleRT2M.jpg";
+          $linkbig7 =  "/maps/SingleRT925.jpg";
+          $linkbig8 =  "/maps/SingleRSST.jpg";
+          $width = "646";
+          $height = "800";
 
           //echo "<p>Command output:</p>";
           $a2_combined = implode("<br>", $a2_output);
@@ -720,7 +727,7 @@ if($a2_matchesexist){
           if ($a2_justcorrelations > 0 && $a2_justcorrelations < 3 && a2_variable<=6) echo "<img src=\"$linkbig2\" width=\"$width\" height=\"$height\"><br>";
           if ($a2_justcorrelations > 2)  echo "<br><br>Click <a href=\"correlationsnew.php\" target=\"_blank\">Here</a> for correlation maps - may need to refresh linked page.<br>";
 
- 
+
         }
       }
     ?>
