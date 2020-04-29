@@ -1,4 +1,7 @@
 
+; run this script from $HOME directory for now
+; use this command to run: sudo -E env "PATH=$PATH" ncl eapi-analogs/SeaIceSelectPercents4bRMS.ncl
+
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl"
@@ -57,7 +60,8 @@ ice_file = addfile(data_dir + "/downloads/icec.sfc.mon.mean.nc","r")
 t2m_file = addfile(data_dir + "/downloads/air.mon.mean.nc","r")
 t925_file = addfile(data_dir + "/downloads/air.mon.mean.pres.nc","r")
 ersst_file = addfile(data_dir + "/downloads/sst.mnmean.v5.nc","r")
-precip_file = addfile(data_dir + "/downloads/prate.sfc.mon.mean.nc","r")
+; this var overwritten before use, commenting for now
+;precip_file = addfile(data_dir + "/downloads/prate.sfc.mon.mean.nc","r")
 
 
 
@@ -70,7 +74,8 @@ precip_file = addfile(data_dir + "/downloads/prate.sfc.mon.mean.nc","r")
 
 if(webinput.eq.False) then
   justcorrelations = 0
-  filedir = "/home/bbrettschneider/"
+  filedir = str_concat((/getenv("HOME"), "/"/))
+  txtareayesno = 2
   txtarea = "1948,134"+cr+"1949,134"+cr+"1950,126"+cr+"1951,120"+cr+"1952,133"+cr+"1953,119"+cr+"1954,126"+cr+"1955,129"+cr+"1956,122"+cr+"1957,125"+cr+"1958,119"+cr+"1959,128"+cr+"1960,123"+cr+"1961,125"+cr+"1962,132"+cr+"1963,125"+cr+"1964,141"+cr+"1965,127"+cr+"1966,128"+cr+"1967,124"+cr+"1968,129"+cr+"1969,118"+cr+"1970,124"+cr+"1971,128"+cr+"1972,131"+cr+"1973,124"+cr+"1974,126"+cr+"1975,130"+cr+"1976,123"+cr+"1977,126"+cr+"1978,120"+cr+"1979,120"+cr+"1980,120"+cr+"1981,120"+cr+"1982,130"+cr+"1983,119"+cr+"1984,130"+cr+"1985,131"+cr+"1986,128"+cr+"1987,125"+cr+"1988,118"+cr+"1989,121"+cr+"1990,114"+cr+"1991,121"+cr+"1992,135"+cr+"1993,113"+cr+"1994,119"+cr+"1995,116"+cr+"1996,126"+cr+"1997,120"+cr+"1998,110"+cr+"1999,119"+cr+"2000,122"+cr+"2001,128"+cr+"2002,127"+cr+"2003,119"+cr+"2004,115"+cr+"2005,118"+cr+"2006,122"+cr+"2007,117"+cr+"2008,127"+cr+"2009,121"+cr+"2010,119"+cr+"2011,124"+cr+"2012,114"+cr+"2013,140"+cr+"2014,115"+cr+"2015,114"+cr+"2016,114"+cr+"2017,121"+cr+"2018,"+cr+"2019,"+cr+"2020,"+cr+"2021,"+cr+"2022,"+cr+"2023,"+cr+"2024,"+cr+"2025,"+cr+"2026,"+cr+"2027,"
   asciiwrite ("special_ascii.txt" , txtarea)
   zz = systemfunc("mv -f "+filedir+"special_ascii.txt /var/www/html/maps/special_ascii.txt")
@@ -3858,7 +3863,7 @@ plot6PanelB(5) = plotX5
 draw(plotX5)
 frame(wks_pan)
 delete(wks_pan)
- 
+
 ;; delete existing image files
   zz = systemfunc("rm -f /var/www/html/maps/a.png")
   zz = systemfunc("rm -f /var/www/html/maps/a1.png")
@@ -3877,7 +3882,6 @@ delete(wks_pan)
   zz = systemfunc("rm -f /var/www/html/maps/s2.png")
   zz = systemfunc("rm -f /var/www/html/maps/v1.png")
   zz = systemfunc("rm -f /var/www/html/maps/v.png")
-
 
   zz = systemfunc("mv -f "+filedir+"pan_a.png /var/www/html/maps/pan_a.png")
   zz = systemfunc("convert /var/www/html/maps/pan_a.png -crop 800x1000+50+0 /var/www/html/maps/a.png")
