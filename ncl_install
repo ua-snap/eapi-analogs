@@ -1,0 +1,26 @@
+#!/bin/bash
+# downdload and install NCL
+
+echo "downloading binary..."
+wget https://www.earthsystemgrid.org/dataset/ncl.630.0/file/ncl_ncarg-6.3.0.Linux_Debian7.8_x86_64_gcc472.tar.gz
+echo "done"
+echo ""
+
+mkdir /usr/local/ncl-6.3.0
+
+echo "decompressing/untarring..."
+tar -zxf ncl_ncarg-6.3.0.Linux_Debian7.8_x86_64_gcc472.tar.gz -C /usr/local/ncl-6.3.0
+echo "done"
+echo ""
+
+rm ncl_ncarg-6.3.0.Linux_Debian7.8_x86_64_gcc472.tar.gz
+
+# set env vars if not present in .bashrc
+if ! grep -q 'export NCARG_ROOT=/usr/local/ncl-6.3.0' ~/.bash_profile ; then
+  echo "# lines added by ncl_install" >> ~/.bash_profile
+  echo "export NCARG_ROOT=/usr/local/ncl-6.3.0" >> ~/.bash_profile
+  echo "PATH=\$NCARG_ROOT/bin:\$PATH" >> ~/.bash_profile
+  echo "" >> ~/.bash_profile
+  echo "Vars set, logout and log back in to use"
+fi
+
