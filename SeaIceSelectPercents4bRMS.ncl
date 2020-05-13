@@ -50,7 +50,9 @@ cr = tochar(10)
 
 winner=""
 
-webinput = isdefined("fromweb")
+;for testing, need to trick script into thinking webinput = True
+;webinput = isdefined("fromweb")
+webinput = True
 
 data_dir = ncargpath("data")
 shapefile_name = data_dir + "/shapes/SeaIceBasinTestDD.shp"
@@ -71,33 +73,6 @@ ersst_file = addfile(data_dir + "/downloads/sst.mnmean.v5.nc","r")
 ;index:     0,   1,   2,   3,   4,   5,   6,   7,   8,   9,  10,  11, 12, 13, 14, 15, 16
 
 
-
-if(webinput.eq.False) then
-  justcorrelations = 0
-  filedir = str_concat((/getenv("HOME"), "/"/))
-  txtareayesno = 2
-  txtarea = "1948,134"+cr+"1949,134"+cr+"1950,126"+cr+"1951,120"+cr+"1952,133"+cr+"1953,119"+cr+"1954,126"+cr+"1955,129"+cr+"1956,122"+cr+"1957,125"+cr+"1958,119"+cr+"1959,128"+cr+"1960,123"+cr+"1961,125"+cr+"1962,132"+cr+"1963,125"+cr+"1964,141"+cr+"1965,127"+cr+"1966,128"+cr+"1967,124"+cr+"1968,129"+cr+"1969,118"+cr+"1970,124"+cr+"1971,128"+cr+"1972,131"+cr+"1973,124"+cr+"1974,126"+cr+"1975,130"+cr+"1976,123"+cr+"1977,126"+cr+"1978,120"+cr+"1979,120"+cr+"1980,120"+cr+"1981,120"+cr+"1982,130"+cr+"1983,119"+cr+"1984,130"+cr+"1985,131"+cr+"1986,128"+cr+"1987,125"+cr+"1988,118"+cr+"1989,121"+cr+"1990,114"+cr+"1991,121"+cr+"1992,135"+cr+"1993,113"+cr+"1994,119"+cr+"1995,116"+cr+"1996,126"+cr+"1997,120"+cr+"1998,110"+cr+"1999,119"+cr+"2000,122"+cr+"2001,128"+cr+"2002,127"+cr+"2003,119"+cr+"2004,115"+cr+"2005,118"+cr+"2006,122"+cr+"2007,117"+cr+"2008,127"+cr+"2009,121"+cr+"2010,119"+cr+"2011,124"+cr+"2012,114"+cr+"2013,140"+cr+"2014,115"+cr+"2015,114"+cr+"2016,114"+cr+"2017,121"+cr+"2018,"+cr+"2019,"+cr+"2020,"+cr+"2021,"+cr+"2022,"+cr+"2023,"+cr+"2024,"+cr+"2025,"+cr+"2026,"+cr+"2027,"
-  asciiwrite ("special_ascii.txt" , txtarea)
-  zz = systemfunc("mv -f "+filedir+"special_ascii.txt /var/www/html/maps/special_ascii.txt")
-end if
-
-if(webinput.eq.True) then
-  filedir = "/var/www/html/"
-  if (txtareayesno.eq.2) then
-    txtarea = "1948,134"+cr+"1949,134"+cr+"1950,126"+cr+"1951,120"+cr+"1952,133"+cr+"1953,119"+cr+"1954,126"+cr+"1955,129"+cr+"1956,122"+cr+"1957,125"+cr+"1958,119"+cr+"1959,128"+cr+"1960,123"+cr+"1961,125"+cr+"1962,132"+cr+"1963,125"+cr+"1964,141"+cr+"1965,127"+cr+"1966,128"+cr+"1967,124"+cr+"1968,129"+cr+"1969,118"+cr+"1970,124"+cr+"1971,128"+cr+"1972,131"+cr+"1973,124"+cr+"1974,126"+cr+"1975,130"+cr+"1976,123"+cr+"1977,126"+cr+"1978,120"+cr+"1979,120"+cr+"1980,120"+cr+"1981,120"+cr+"1982,130"+cr+"1983,119"+cr+"1984,130"+cr+"1985,131"+cr+"1986,128"+cr+"1987,125"+cr+"1988,118"+cr+"1989,121"+cr+"1990,114"+cr+"1991,121"+cr+"1992,135"+cr+"1993,113"+cr+"1994,119"+cr+"1995,116"+cr+"1996,126"+cr+"1997,120"+cr+"1998,110"+cr+"1999,119"+cr+"2000,122"+cr+"2001,128"+cr+"2002,127"+cr+"2003,119"+cr+"2004,115"+cr+"2005,118"+cr+"2006,122"+cr+"2007,117"+cr+"2008,127"+cr+"2009,121"+cr+"2010,119"+cr+"2011,124"+cr+"2012,114"+cr+"2013,140"+cr+"2014,115"+cr+"2015,114"+cr+"2016,114"+cr+"2017,121"+cr+"2018,"+cr+"2019,"+cr+"2020,"+cr+"2021,"+cr+"2022,"+cr+"2023,"+cr+"2024,"+cr+"2025,"+cr+"2026,"+cr+"2027,"
-  end if
-  if (txtareayesno.eq.1) then
-    txtarea=str_sub_str(tostring(txtarea),tostring(" "),tostring(cr))
-  end if
-  if (txtareayesno.eq.0) then
-    txtarea = "1948,134"+cr+"1949,134"+cr+"1950,126"+cr+"1951,120"+cr+"1952,133"+cr+"1953,119"+cr+"1954,126"+cr+"1955,129"+cr+"1956,122"+cr+"1957,125"+cr+"1958,119"+cr+"1959,128"+cr+"1960,123"+cr+"1961,125"+cr+"1962,132"+cr+"1963,125"+cr+"1964,141"+cr+"1965,127"+cr+"1966,128"+cr+"1967,124"+cr+"1968,129"+cr+"1969,118"+cr+"1970,124"+cr+"1971,128"+cr+"1972,131"+cr+"1973,124"+cr+"1974,126"+cr+"1975,130"+cr+"1976,123"+cr+"1977,126"+cr+"1978,120"+cr+"1979,120"+cr+"1980,120"+cr+"1981,120"+cr+"1982,130"+cr+"1983,119"+cr+"1984,130"+cr+"1985,131"+cr+"1986,128"+cr+"1987,125"+cr+"1988,118"+cr+"1989,121"+cr+"1990,114"+cr+"1991,121"+cr+"1992,135"+cr+"1993,113"+cr+"1994,119"+cr+"1995,116"+cr+"1996,126"+cr+"1997,120"+cr+"1998,110"+cr+"1999,119"+cr+"2000,122"+cr+"2001,128"+cr+"2002,127"+cr+"2003,119"+cr+"2004,115"+cr+"2005,118"+cr+"2006,122"+cr+"2007,117"+cr+"2008,127"+cr+"2009,121"+cr+"2010,119"+cr+"2011,124"+cr+"2012,114"+cr+"2013,140"+cr+"2014,115"+cr+"2015,114"+cr+"2016,114"+cr+"2017,121"+cr+"2018,"+cr+"2019,"+cr+"2020,"+cr+"2021,"+cr+"2022,"+cr+"2023,"+cr+"2024,"+cr+"2025,"+cr+"2026,"+cr+"2027,"
-    specialnum = 0
-  end if
-  asciiwrite ("special_ascii.txt" , txtarea)
-  zz = systemfunc("mv -f "+filedir+"special_ascii.txt /var/www/html/maps/special_ascii.txt")
-
-
-end if
 
 
 
@@ -131,7 +106,9 @@ end if
 ;;;  Get all the program parameters from the
 ;;;  file called "parameters1.csv".
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-if (webinput.eq.False) then
+;webinput set to True for testing
+;if (webinput.eq.False) then
+if (webinput.eq.True) then
   parameters_file =         data_dir + "/csv/parameters1.csv"
   values_1d2 = asciiread(parameters_file,-1,"string")
   strs3   = str_split_csv (values_1d2, ",", 0)
@@ -140,9 +117,11 @@ if (webinput.eq.False) then
   numcols3     = 23
   numrows3     = dimsizes(values_1d2)
 end if
-if (webinput.eq.True) then
-  numrows3 = 1    ; if the input comes from the web, only do one iteration of outside loop
-end if
+
+; comment out original conditional for webinput.eq.True
+;if (webinput.eq.True) then
+;  numrows3 = 1    ; if the input comes from the web, only do one iteration of outside loop
+;end if
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; end the section reading list of
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; coordinates from boxcoordsX.csv
 
@@ -155,8 +134,9 @@ end if
 allYears = ""
 do ty=0,numrows3-1
 
-
-if (webinput.eq.False) then
+;webinput set to True for testing
+;if (webinput.eq.False) then
+if (webinput.eq.True) then
   usermonth = nums3(ty,0)
   useryear  = nums3(ty,1)
   if (useryear .eq. 8888)
@@ -187,15 +167,62 @@ if (webinput.eq.False) then
   indexchoice = 0
   specialnum = 1
   doNMME = False
+  ; added for testing, not available vars if run via CL
+  pearsonrms = nums3(ty,29)
+  justcorrelations = nums3(ty,30)
+  domanual = nums3(ty,31)
+  manualyesno = domanual
+  howmanyyears = nums3(ty,32)
+  manyear1 = nums3(ty,33)
+  manyear2 = nums3(ty,34) 
+  manyear3 = nums3(ty,35)
+  manyear4 = nums3(ty,36)
+  manyear5 = nums3(ty,37)
 end if
 
+if (pearsonrms.eq.0) then
+  ;txtareayesno set to 2 ONLY if pearsonrms == 0 (in PHP)
+  txtareayesno = 2
+end if
+
+;the following blocks were moved from earlier in script
+if(webinput.eq.False) then
+  justcorrelations = 0
+  filedir = str_concat((/getenv("HOME"), "/"/))
+  txtareayesno = 2
+  txtarea = "1948,134"+cr+"1949,134"+cr+"1950,126"+cr+"1951,120"+cr+"1952,133"+cr+"1953,119"+cr+"1954,126"+cr+"1955,129"+cr+"1956,122"+cr+"1957,125"+cr+"1958,119"+cr+"1959,128"+cr+"1960,123"+cr+"1961,125"+cr+"1962,132"+cr+"1963,125"+cr+"1964,141"+cr+"1965,127"+cr+"1966,128"+cr+"1967,124"+cr+"1968,129"+cr+"1969,118"+cr+"1970,124"+cr+"1971,128"+cr+"1972,131"+cr+"1973,124"+cr+"1974,126"+cr+"1975,130"+cr+"1976,123"+cr+"1977,126"+cr+"1978,120"+cr+"1979,120"+cr+"1980,120"+cr+"1981,120"+cr+"1982,130"+cr+"1983,119"+cr+"1984,130"+cr+"1985,131"+cr+"1986,128"+cr+"1987,125"+cr+"1988,118"+cr+"1989,121"+cr+"1990,114"+cr+"1991,121"+cr+"1992,135"+cr+"1993,113"+cr+"1994,119"+cr+"1995,116"+cr+"1996,126"+cr+"1997,120"+cr+"1998,110"+cr+"1999,119"+cr+"2000,122"+cr+"2001,128"+cr+"2002,127"+cr+"2003,119"+cr+"2004,115"+cr+"2005,118"+cr+"2006,122"+cr+"2007,117"+cr+"2008,127"+cr+"2009,121"+cr+"2010,119"+cr+"2011,124"+cr+"2012,114"+cr+"2013,140"+cr+"2014,115"+cr+"2015,114"+cr+"2016,114"+cr+"2017,121"+cr+"2018,"+cr+"2019,"+cr+"2020,"+cr+"2021,"+cr+"2022,"+cr+"2023,"+cr+"2024,"+cr+"2025,"+cr+"2026,"+cr+"2027,"
+  asciiwrite ("special_ascii.txt" , txtarea)
+  zz = systemfunc("mv -f "+filedir+"special_ascii.txt /var/www/html/maps/special_ascii.txt")
+end if
+
+if(webinput.eq.True) then
+  ;change filedir because apparently things aren't saving to this dir when not actually using PHP inputs
+  ;filedir = "/var/www/html/"
+  filedir = ""
+  if (txtareayesno.eq.2) then
+    txtarea = "1948,134"+cr+"1949,134"+cr+"1950,126"+cr+"1951,120"+cr+"1952,133"+cr+"1953,119"+cr+"1954,126"+cr+"1955,129"+cr+"1956,122"+cr+"1957,125"+cr+"1958,119"+cr+"1959,128"+cr+"1960,123"+cr+"1961,125"+cr+"1962,132"+cr+"1963,125"+cr+"1964,141"+cr+"1965,127"+cr+"1966,128"+cr+"1967,124"+cr+"1968,129"+cr+"1969,118"+cr+"1970,124"+cr+"1971,128"+cr+"1972,131"+cr+"1973,124"+cr+"1974,126"+cr+"1975,130"+cr+"1976,123"+cr+"1977,126"+cr+"1978,120"+cr+"1979,120"+cr+"1980,120"+cr+"1981,120"+cr+"1982,130"+cr+"1983,119"+cr+"1984,130"+cr+"1985,131"+cr+"1986,128"+cr+"1987,125"+cr+"1988,118"+cr+"1989,121"+cr+"1990,114"+cr+"1991,121"+cr+"1992,135"+cr+"1993,113"+cr+"1994,119"+cr+"1995,116"+cr+"1996,126"+cr+"1997,120"+cr+"1998,110"+cr+"1999,119"+cr+"2000,122"+cr+"2001,128"+cr+"2002,127"+cr+"2003,119"+cr+"2004,115"+cr+"2005,118"+cr+"2006,122"+cr+"2007,117"+cr+"2008,127"+cr+"2009,121"+cr+"2010,119"+cr+"2011,124"+cr+"2012,114"+cr+"2013,140"+cr+"2014,115"+cr+"2015,114"+cr+"2016,114"+cr+"2017,121"+cr+"2018,"+cr+"2019,"+cr+"2020,"+cr+"2021,"+cr+"2022,"+cr+"2023,"+cr+"2024,"+cr+"2025,"+cr+"2026,"+cr+"2027,"
+  end if
+  if (txtareayesno.eq.1) then
+    txtarea=str_sub_str(tostring(txtarea),tostring(" "),tostring(cr))
+  end if
+  if (txtareayesno.eq.0) then
+    txtarea = "1948,134"+cr+"1949,134"+cr+"1950,126"+cr+"1951,120"+cr+"1952,133"+cr+"1953,119"+cr+"1954,126"+cr+"1955,129"+cr+"1956,122"+cr+"1957,125"+cr+"1958,119"+cr+"1959,128"+cr+"1960,123"+cr+"1961,125"+cr+"1962,132"+cr+"1963,125"+cr+"1964,141"+cr+"1965,127"+cr+"1966,128"+cr+"1967,124"+cr+"1968,129"+cr+"1969,118"+cr+"1970,124"+cr+"1971,128"+cr+"1972,131"+cr+"1973,124"+cr+"1974,126"+cr+"1975,130"+cr+"1976,123"+cr+"1977,126"+cr+"1978,120"+cr+"1979,120"+cr+"1980,120"+cr+"1981,120"+cr+"1982,130"+cr+"1983,119"+cr+"1984,130"+cr+"1985,131"+cr+"1986,128"+cr+"1987,125"+cr+"1988,118"+cr+"1989,121"+cr+"1990,114"+cr+"1991,121"+cr+"1992,135"+cr+"1993,113"+cr+"1994,119"+cr+"1995,116"+cr+"1996,126"+cr+"1997,120"+cr+"1998,110"+cr+"1999,119"+cr+"2000,122"+cr+"2001,128"+cr+"2002,127"+cr+"2003,119"+cr+"2004,115"+cr+"2005,118"+cr+"2006,122"+cr+"2007,117"+cr+"2008,127"+cr+"2009,121"+cr+"2010,119"+cr+"2011,124"+cr+"2012,114"+cr+"2013,140"+cr+"2014,115"+cr+"2015,114"+cr+"2016,114"+cr+"2017,121"+cr+"2018,"+cr+"2019,"+cr+"2020,"+cr+"2021,"+cr+"2022,"+cr+"2023,"+cr+"2024,"+cr+"2025,"+cr+"2026,"+cr+"2027,"
+    specialnum = 0
+  end if
+  ;/var/www/html/ must be default outout dir here when using webinput
+  ;asciiwrite ("special_ascii.txt" , txtarea)
+  asciiwrite ("special_ascii.txt" , txtarea)
+  zz = systemfunc("mv -f "+filedir+"special_ascii.txt /var/www/html/maps/special_ascii.txt")
+
+
+end if
 
 
 pearsons = 0
 
 
-
-domanual = isdefined("manualyesno")
+;domanual defined above for testing
+;domanual = isdefined("manualyesno")
 
 numAnalogsToUse = 5
 
@@ -343,8 +370,9 @@ end if
 ;delete(sst_rm)
 ;delete(icec_rm)
 
-
-if(webinput.eq.True) then
+;ignore this section for testing, handled in parameters
+;if(webinput.eq.True) then
+if(webinput.eq.False) then
   if(variable.eq.0) then
     print("Please select a theme to map.")
     exit
