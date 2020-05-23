@@ -1,7 +1,3 @@
-
-; run this script from $HOME directory for now
-; use this command to run: sudo -E env "PATH=$PATH" ncl eapi-analogs/SeaIceSelectPercents4bRMS.ncl
-
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl"
@@ -9,19 +5,52 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/shea_util.ncl"
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/BB_utils.ncl"
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/shapefile_utils.ncl"
 
-begin 
+begin
+
+; TODO Paths we will need:
+; - input data directory (netCDF files etc)
+; - "filedir" seems to copy some statically-needed stuff
+;   which we may not have from Brian yet.
+; - scratch working directory
+; - output directory
+;   * Almost all instances of hardcoded /var/www/html
+;   * are pointing to /var/www/html/maps which is probably
+;   * the same as the output directory.  (300 out of 303 refs).
+
+; This is defined in the documentation currently as
+; "Directory where NCAR Graphics HLU and NCL
+; example data files are installed."
+; TODO.  Can probably make it point elsewhere for normal updates
+; so we're not poking around in system installs for
+; normal maintenance, after we're sure what's being loaded
+; there.
+data_dir = ncargpath("data")
+
+; How is HOME environment / location used?
+; What files live here and how are they used?
+; this is either $HOME or /var/www/html.
+; filedir = "/var/www/html/"
+; ^ This seems to be a second source directory
+; for file inputs.
+
+; Define the output directory (see comments above
+; re: /var/www/html/maps
+; this should be unique for each run.
+output_dir = getenv("NCL_OUTPUT_DIR")
 
 xyear = toint(systemfunc("date +'%Y'"))
 xmonth = toint(systemfunc("date +'%m'"))
 xday = toint(systemfunc("date +'%d'"))
 xhour = toint(systemfunc("date +'%H'"))
 
+; TODO this has some special date handling to examine later
 currentYear = xyear
 if (xmonth.eq.1.and.xday.le.3) then
 currentYear = xyear - 1
 end if
 
-currentMonth = xmonth - 2 
+; TODO this has some special date handling to examine later
+currentMonth = xmonth - 2
 if (xday.gt.3) then
   currentMonth = xmonth - 1
 end if
@@ -35,6 +64,8 @@ end if
 ; set the current year and month. If there's a problem,
 ; you can manuall set it below.
 ;***********************************************************
+; TODO @kyle verify this isn't from our branching work
+; or part of what we need to do to maintain this tool over time
   ;currentMonth = 3          ; most recent month with data
   ;currentYear = 2020        ; most recent year with data
 ;***********************************************************
@@ -42,7 +73,7 @@ end if
 
   theMaxDimsizes = ((currentYear - 1948) * 12) + currentMonth
 
-  
+
 
 
 
@@ -52,7 +83,6 @@ winner=""
 
 webinput = isdefined("fromweb")
 
-data_dir = ncargpath("data")
 shapefile_name = data_dir + "/shapes/SeaIceBasinTestDD.shp"
 slp_file = addfile(data_dir + "/downloads/slp.mon.mean.nc","r")
 hgt_file = addfile(data_dir + "/downloads/hgt.mon.mean.nc","r")
@@ -73,16 +103,30 @@ ersst_file = addfile(data_dir + "/downloads/sst.mnmean.v5.nc","r")
 
 
 if(webinput.eq.False) then
+  ; TODO @kyle does variable mean we've never
+  ; properly tested the correlations?!
   justcorrelations = 0
+
+  ; TODO documenting before removing this,
+  ; need to sort out what filedir is doing.
+  ; Note dependency on /var/www/html/maps.
   filedir = str_concat((/getenv("HOME"), "/"/))
   txtareayesno = 2
+
+  ; TODO note duplication between this and definitions below
+  ; when the app is launched from the web (= command line options)
   txtarea = "1948,134"+cr+"1949,134"+cr+"1950,126"+cr+"1951,120"+cr+"1952,133"+cr+"1953,119"+cr+"1954,126"+cr+"1955,129"+cr+"1956,122"+cr+"1957,125"+cr+"1958,119"+cr+"1959,128"+cr+"1960,123"+cr+"1961,125"+cr+"1962,132"+cr+"1963,125"+cr+"1964,141"+cr+"1965,127"+cr+"1966,128"+cr+"1967,124"+cr+"1968,129"+cr+"1969,118"+cr+"1970,124"+cr+"1971,128"+cr+"1972,131"+cr+"1973,124"+cr+"1974,126"+cr+"1975,130"+cr+"1976,123"+cr+"1977,126"+cr+"1978,120"+cr+"1979,120"+cr+"1980,120"+cr+"1981,120"+cr+"1982,130"+cr+"1983,119"+cr+"1984,130"+cr+"1985,131"+cr+"1986,128"+cr+"1987,125"+cr+"1988,118"+cr+"1989,121"+cr+"1990,114"+cr+"1991,121"+cr+"1992,135"+cr+"1993,113"+cr+"1994,119"+cr+"1995,116"+cr+"1996,126"+cr+"1997,120"+cr+"1998,110"+cr+"1999,119"+cr+"2000,122"+cr+"2001,128"+cr+"2002,127"+cr+"2003,119"+cr+"2004,115"+cr+"2005,118"+cr+"2006,122"+cr+"2007,117"+cr+"2008,127"+cr+"2009,121"+cr+"2010,119"+cr+"2011,124"+cr+"2012,114"+cr+"2013,140"+cr+"2014,115"+cr+"2015,114"+cr+"2016,114"+cr+"2017,121"+cr+"2018,"+cr+"2019,"+cr+"2020,"+cr+"2021,"+cr+"2022,"+cr+"2023,"+cr+"2024,"+cr+"2025,"+cr+"2026,"+cr+"2027,"
   asciiwrite ("special_ascii.txt" , txtarea)
   zz = systemfunc("mv -f "+filedir+"special_ascii.txt /var/www/html/maps/special_ascii.txt")
 end if
 
 if(webinput.eq.True) then
+  ; TODO see note above re: filedir
   filedir = "/var/www/html/"
+
+  ; TODO xref input var txtareayesno in PHP script,
+  ; ~line 682 this may be hardcoded to 2.  Find out why
+  ; and if we can delete unused code here.
   if (txtareayesno.eq.2) then
     txtarea = "1948,134"+cr+"1949,134"+cr+"1950,126"+cr+"1951,120"+cr+"1952,133"+cr+"1953,119"+cr+"1954,126"+cr+"1955,129"+cr+"1956,122"+cr+"1957,125"+cr+"1958,119"+cr+"1959,128"+cr+"1960,123"+cr+"1961,125"+cr+"1962,132"+cr+"1963,125"+cr+"1964,141"+cr+"1965,127"+cr+"1966,128"+cr+"1967,124"+cr+"1968,129"+cr+"1969,118"+cr+"1970,124"+cr+"1971,128"+cr+"1972,131"+cr+"1973,124"+cr+"1974,126"+cr+"1975,130"+cr+"1976,123"+cr+"1977,126"+cr+"1978,120"+cr+"1979,120"+cr+"1980,120"+cr+"1981,120"+cr+"1982,130"+cr+"1983,119"+cr+"1984,130"+cr+"1985,131"+cr+"1986,128"+cr+"1987,125"+cr+"1988,118"+cr+"1989,121"+cr+"1990,114"+cr+"1991,121"+cr+"1992,135"+cr+"1993,113"+cr+"1994,119"+cr+"1995,116"+cr+"1996,126"+cr+"1997,120"+cr+"1998,110"+cr+"1999,119"+cr+"2000,122"+cr+"2001,128"+cr+"2002,127"+cr+"2003,119"+cr+"2004,115"+cr+"2005,118"+cr+"2006,122"+cr+"2007,117"+cr+"2008,127"+cr+"2009,121"+cr+"2010,119"+cr+"2011,124"+cr+"2012,114"+cr+"2013,140"+cr+"2014,115"+cr+"2015,114"+cr+"2016,114"+cr+"2017,121"+cr+"2018,"+cr+"2019,"+cr+"2020,"+cr+"2021,"+cr+"2022,"+cr+"2023,"+cr+"2024,"+cr+"2025,"+cr+"2026,"+cr+"2027,"
   end if
@@ -135,12 +179,14 @@ if (webinput.eq.False) then
   parameters_file =         data_dir + "/csv/parameters1.csv"
   values_1d2 = asciiread(parameters_file,-1,"string")
   strs3   = str_split_csv (values_1d2, ",", 0)
-  nums3   = toint (strs3)                    ; 
-  nums3@_FillValue = -9999  
+  nums3   = toint (strs3)                    ;
+  nums3@_FillValue = -9999
   numcols3     = 23
   numrows3     = dimsizes(values_1d2)
 end if
 if (webinput.eq.True) then
+  ; TODO document the impact on the visualizations
+  ; from this fixed parameter
   numrows3 = 1    ; if the input comes from the web, only do one iteration of outside loop
 end if
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; end the section reading list of
@@ -148,8 +194,8 @@ end if
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;  Now we loop through every set of box coordinates, look for analogs, 
-;;;  and make plots. The variable "ty" is the index for the boxcoordsX 
+;;;  Now we loop through every set of box coordinates, look for analogs,
+;;;  and make plots. The variable "ty" is the index for the boxcoordsX
 ;;;  list. "End Do" is right before "End" statement. (Section 7)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 allYears = ""
@@ -159,6 +205,7 @@ do ty=0,numrows3-1
 if (webinput.eq.False) then
   usermonth = nums3(ty,0)
   useryear  = nums3(ty,1)
+  ; TODO what's this?
   if (useryear .eq. 8888)
     exit
   end if
@@ -190,7 +237,7 @@ if (webinput.eq.False) then
 end if
 
 
-
+; TODO remove unused stuff
 pearsons = 0
 
 
@@ -223,7 +270,7 @@ end if
 
   precip   = mon_fullyear( precip_file->precip(0:theMaxDimsizes-2,:,:), 0)          ; use this line is precip has not updated yet
   if (xday.ge.7) then
-    precip   = mon_fullyear( precip_file->precip(0:theMaxDimsizes-1,:,:), 0)         ; use this line is precip has updated 
+    precip   = mon_fullyear( precip_file->precip(0:theMaxDimsizes-1,:,:), 0)         ; use this line is precip has updated
   end if
 
 
@@ -330,6 +377,7 @@ end if
   delete(sst_std2)
   delete(ice_std2)
 
+; TODO delete debugging code
 ;printVarSummary(sst)
 ;printVarSummary(sst_rm)
 ;printVarSummary(sst_std)
@@ -345,6 +393,9 @@ end if
 
 
 if(webinput.eq.True) then
+  ; TODO eventually we can sanity-check inputs
+  ; to this script one more time at the start,
+  ; but that's for after more cleanup of this codebase.
   if(variable.eq.0) then
     print("Please select a theme to map.")
     exit
@@ -375,10 +426,10 @@ end if
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;  The next block is where the index values for climatology 
+;;;  The next block is where the index values for climatology
 ;;;  are determined.  (Section 3)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
- 
+
   yrStrt = 1948                                        ; Beginning year of .nc file
   yrLast = currentYear                                 ; Last COMPLETE year of .nc file
   if (currentMonth.lt.12) then
@@ -392,7 +443,7 @@ end if
   yrStrtIceClm = 1979                                  ; change number for different ice concentration climate begin period
   yrLastIceClm = currentYear                           ; change number for different ice concentration climate end period
   if (currentMonth.lt.12) then
-    yrLastIceClm = currentYear - 1                             
+    yrLastIceClm = currentYear - 1
   end if
 
 
@@ -413,10 +464,10 @@ end if
   iYYYYMM  = ind(YYYYMM.ge.iStrt .and. YYYYMM.le.iLast)
   iClmYYYYMM  = ind(YYYYMM.ge.iclmStrt .and. YYYYMM.le.iclmLast)
 
- 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;  Create a 12-month (3 repeating 12-month) climo array. The arrays
-;;;  are typically 12-month but since we want to look both backward 
+;;;  are typically 12-month but since we want to look both backward
 ;;;  and forward, we need these values repeated. (Section 4)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   slpClm12 = clmMonTLL( slp_file->slp(iclmStrt:iclmLast,:,:) )
@@ -427,19 +478,19 @@ end if
   slpClmab = array_append_record(clmMonTLL( slp_std(iclmStrt:iclmLast,:,:) ),clmMonTLL( slp_std(iclmStrt:iclmLast,:,:) ),0)
   slpClmb = array_append_record(slpClmab,clmMonTLL( slp_std(iclmStrt:iclmLast,:,:) ),0)
 
-  t2mClm12 = clmMonTLL( t2m_file->air(iclmStrt:iclmLast,:,:) ) 
+  t2mClm12 = clmMonTLL( t2m_file->air(iclmStrt:iclmLast,:,:) )
   t2mClma = array_append_record(clmMonTLL( t2m_file->air(iclmStrt:iclmLast,:,:) ) ,clmMonTLL( t2m_file->air(iclmStrt:iclmLast,:,:) ),0)
   t2mClm = array_append_record(t2mClma ,clmMonTLL( t2m_file->air(iclmStrt:iclmLast,:,:) ),0)
 
-  t2mClm12b = clmMonTLL( t2m_std(iclmStrt:iclmLast,:,:) ) 
+  t2mClm12b = clmMonTLL( t2m_std(iclmStrt:iclmLast,:,:) )
   t2mClmab = array_append_record(clmMonTLL( t2m_std(iclmStrt:iclmLast,:,:) ) ,clmMonTLL( t2m_std(iclmStrt:iclmLast,:,:) ),0)
   t2mClmb = array_append_record(t2mClmab ,clmMonTLL( t2m_std(iclmStrt:iclmLast,:,:) ),0)
 
-  t925Clm12 = clmMonTLL( t925_file->air(iclmStrt:iclmLast,templev,:,:) ) 
+  t925Clm12 = clmMonTLL( t925_file->air(iclmStrt:iclmLast,templev,:,:) )
   t925Clma = array_append_record(clmMonTLL( t925_file->air(iclmStrt:iclmLast,templev,:,:) ) ,clmMonTLL( t925_file->air(iclmStrt:iclmLast,templev,:,:) ),0)
   t925Clm = array_append_record(t925Clma ,clmMonTLL( t925_file->air(iclmStrt:iclmLast,templev,:,:) ),0)
 
-  t925Clm12b = clmMonTLL( t925_std(iclmStrt:iclmLast,:,:) ) 
+  t925Clm12b = clmMonTLL( t925_std(iclmStrt:iclmLast,:,:) )
   t925Clmab = array_append_record(clmMonTLL( t925_std(iclmStrt:iclmLast,:,:) ) ,clmMonTLL( t925_std(iclmStrt:iclmLast,:,:) ),0)
   t925Clmb = array_append_record(t925Clmab ,clmMonTLL( t925_std(iclmStrt:iclmLast,:,:) ),0)
 
@@ -459,12 +510,12 @@ end if
   sstClmab = array_append_record(clmMonTLL( sst_std(iclmStrt:iclmLast,:,:) ),clmMonTLL( sst_std(iclmStrt:iclmLast,:,:) ),0)
   sstClmb = array_append_record(sstClmab,clmMonTLL( sst_std(iclmStrt:iclmLast,:,:) ),0)
 
-;  if (variable.lt.6) then 
+;  if (variable.lt.6) then
 ;    iceClm12 = clmMonTLL( ice_file->icec(iclmStrt:iclmLast,:,:) )
 ;    iceClma = array_append_record(clmMonTLL( ice_file->icec(iclmStrt:iclmLast,:,:) ),clmMonTLL( ice_file->icec(iclmStrt:iclmLast,:,:) ),0)
 ;    iceClm = array_append_record(iceClma,clmMonTLL( ice_file->icec(iclmStrt:iclmLast,:,:) ),0)
 ;  end if
-;  if (variable.eq.6) then 
+;  if (variable.eq.6) then
 ;    iceClm12 = clmMonTLL( ice_file->precip(iclmStrt:iclmLast,:,:) )
 ;    iceClma = array_append_record(clmMonTLL( ice_file->precip(iclmStrt:iclmLast,:,:) ),clmMonTLL( ice_file->precip(iclmStrt:iclmLast,:,:) ),0)
 ;    iceClm = array_append_record(iceClma,clmMonTLL( ice_file->precip(iclmStrt:iclmLast,:,:) ),0)
@@ -488,7 +539,7 @@ end if
 
 
 
-totalDims = theMaxDimsizes   
+totalDims = theMaxDimsizes
 
 
 totalDimsM1 = totalDims - 1     ; 818 with Mar 2016 data
@@ -499,7 +550,7 @@ totalDimsM2 = totalDims - 2     ; 817 with Mar 2016 data
 
 
 
-  exmth = exmth - 1          ; subtract 1 so that it can be used in array indicies    
+  exmth = exmth - 1          ; subtract 1 so that it can be used in array indicies
   exmthlabel = exmth + 1     ; this is just a label for a print out
   d = fmnths+fmnths2
   monthRangeString1 = MonthStr1(usermonth-exmth,usermonth,useryear,2)
@@ -511,10 +562,10 @@ totalDimsM2 = totalDims - 2     ; 817 with Mar 2016 data
   end if
   ;compare = 803+usermonth + fmnths + fmnths2 - 1    ; change 803 to 815 in 2016
   ;compare = 815+usermonth + fmnths + fmnths2 - 1    ; change 803 to 815 in 2016
-  compare = 863+usermonth + fmnths + fmnths2 - 1    ; change 803 to 815 in 2016  ; change to 851 in 2019  
+  compare = 863+usermonth + fmnths + fmnths2 - 1    ; change 803 to 815 in 2016  ; change to 851 in 2019
 
 
-; thetime variable is the index location of the month/year that the user entered 
+; thetime variable is the index location of the month/year that the user entered
   thetime = ((useryear-1948) * 12) + usermonth - 1  ; as of Mar 2016, there are 819 months (0 to 818)
 
   AKstring = "CONUS" ; enter the name for the area (e.g., Alaska, Arctic, etc.)
@@ -528,7 +579,7 @@ totalDimsM2 = totalDims - 2     ; 817 with Mar 2016 data
   end if
 
   if (exmth.eq.0) then
-    rngStr1 = month_Name(usermonth)+" "+useryear+"~C~Climatology: "+yrStrtClm+" to "+yrLastClm  
+    rngStr1 = month_Name(usermonth)+" "+useryear+"~C~Climatology: "+yrStrtClm+" to "+yrLastClm
     rngStr2 = "Analogs for " + month_Name(usermonth)+" "+useryear
   end if
 
@@ -538,10 +589,10 @@ totalDimsM2 = totalDims - 2     ; 817 with Mar 2016 data
 
 
   lat_box = (/y2,  y1, y1, y2, y2/)
-  lon_box = (/x1, x1,  x2, x2, x1/) 
+  lon_box = (/x1, x1,  x2, x2, x1/)
   boxStr = "Lat: "+y1+" to "+y2+" & Lon: "+x1+" to "+x2
   AKlat_box = (/AK2, AK2, AK1, AK1, AK2/)
-  AKlon_box = (/AK4, AK3, AK3, AK4, AK4/) 
+  AKlon_box = (/AK4, AK3, AK3, AK4, AK4/)
 
 ;; below is most of the string to contain the output image filename
 fname_pre = "Output_"+tostring(x1)+ "_"+tostring(y1) + "_"+tostring(x2) + "_"+tostring(y2)
@@ -552,7 +603,7 @@ fname_pre = "Output_"+tostring(x1)+ "_"+tostring(y1) + "_"+tostring(x2) + "_"+to
 
 
 
-;;;; *************** Create selection polygon. 
+;;;; *************** Create selection polygon.
 
   useshapefile = 55
   if (useshapefile.eq.99) then
@@ -561,7 +612,7 @@ fname_pre = "Output_"+tostring(x1)+ "_"+tostring(y1) + "_"+tostring(x2) + "_"+to
     shapenameshort="Test_Box"
 
     opt = True
-    opt@return_mask = True 
+    opt@return_mask = True
 
     var = slp_std(0:,:,:)
     dimsizes_var = dimsizes(var)
@@ -650,7 +701,7 @@ fname_pre = "Output_"+tostring(x1)+ "_"+tostring(y1) + "_"+tostring(x2) + "_"+to
     jjlat=cos((4.*atan(1.)/180.)*mylat)
 
     jjsizes = dimsizes(slp_sel)
-  
+
   end if
 
 ;;;******************** end define Selection Polygon
@@ -668,48 +719,48 @@ fname_pre = "Output_"+tostring(x1)+ "_"+tostring(y1) + "_"+tostring(x2) + "_"+to
 
 
   YearArray = new(80,float)
-  slpArray1 = new(80,float) 
-  slpArray2 = new(80,float)  
-  slpArray3 = new(80,float)  
-  slpArray3b = new(80,float)  
-  slpArray3c = new(80,float)  
-  slpArray4 = new(80,float)  
-  slpArray5 = new(80,float)  
+  slpArray1 = new(80,float)
+  slpArray2 = new(80,float)
+  slpArray3 = new(80,float)
+  slpArray3b = new(80,float)
+  slpArray3c = new(80,float)
+  slpArray4 = new(80,float)
+  slpArray5 = new(80,float)
   h500Array1 = new(80,float)  ; all 1's are each yearly month minus usermonth
   h500Array2 = new(80,float)  ; all 2's are the actual yearly month values
   h500Array3 = new(80,float)  ; all 3's are each yearly month minus usermonth divided by std. dev. of annual averages
   h500Array3b = new(80,float) ; all 3b's are each yearly month minus usermonth divided by std. dev. of each point (using built-in function)
   h500Array3c = new(80,float) ; all 3b's are each yearly month minus usermonth divided by std. dev. of each point (using built-in function)
-  h500Array4 = new(80,float)  ; all 4's are the same as 3b's 
-  h500Array5 = new(80,float)  
+  h500Array4 = new(80,float)  ; all 4's are the same as 3b's
+  h500Array5 = new(80,float)
   t2mArray1 = new(80,float)
   t2mArray2 = new(80,float)
   t2mArray3 = new(80,float)
   t2mArray3b = new(80,float)
   t2mArray3c = new(80,float)
   t2mArray4 = new(80,float)
-  t2mArray5 = new(80,float)  
+  t2mArray5 = new(80,float)
   t925Array1 = new(80,float)
   t925Array2 = new(80,float)
   t925Array3 = new(80,float)
   t925Array3b = new(80,float)
   t925Array3c = new(80,float)
   t925Array4 = new(80,float)
-  t925Array5 = new(80,float)  
+  t925Array5 = new(80,float)
   sstArray1 = new(80,float)
   sstArray2 = new(80,float)
   sstArray3 = new(80,float)
   sstArray3b = new(80,float)
   sstArray3c = new(80,float)
   sstArray4 = new(80,float)
-  sstArray5 = new(80,float)  
+  sstArray5 = new(80,float)
   iceArray1 = new(80,float)
   iceArray2 = new(80,float)
   iceArray3 = new(80,float)
   iceArray3b = new(80,float)
   iceArray3c = new(80,float)
   iceArray4 = new(80,float)
-  iceArray5 = new(80,float)  
+  iceArray5 = new(80,float)
   weightedArray1 = new(80,float)
   weightedArraySpecial = new(80,float)
   slpArray1(0) = 9999.0
@@ -749,22 +800,22 @@ fname_pre = "Output_"+tostring(x1)+ "_"+tostring(y1) + "_"+tostring(x2) + "_"+to
 ;; How many years do we look at? For example, if you are assessing
 ;; December 2015 data for a January 2016 projection, you can't use
 ;; the December 2015 data when looking at how past years have played
-;; out. 
+;; out.
 
 fj = usermonth+fmnths+fmnths2-1
 
 currentMonth2 = currentMonth + 12
 
-if (fj.le.currentMonth) then             
+if (fj.le.currentMonth) then
   NumAnalysisYears = currentYear - 1948
 end if
-if (fj.gt.currentMonth) then            
+if (fj.gt.currentMonth) then
   NumAnalysisYears = currentYear - 1948 - 1
 end if
-if (fj.gt.currentMonth .and.fj.le.currentMonth2) then  
+if (fj.gt.currentMonth .and.fj.le.currentMonth2) then
   NumAnalysisYears = currentYear - 1948 - 1
 end if
-if (fj.gt.currentMonth2) then               
+if (fj.gt.currentMonth2) then
   NumAnalysisYears = currentYear - 1948 - 2
 end if
 
@@ -981,15 +1032,15 @@ do k = 0, NumAnalysisYears-1
   yearArrayRedBlue = myYear
 
 
-  isx = isdefined("x") 
-  if (isx.eq.True)then 
+  isx = isdefined("x")
+  if (isx.eq.True)then
     delete(x)
   end if
   x=slp_std(ki-exmth:ki,{y1:y2},{x1:x2})
   y=slpClmb(usermonth+12-1-exmth:usermonth+12-1,{y1:y2},{x1:x2})
   xlat=x&lat
   clat=cos((4.*atan(1.)/180.)*xlat)
-  
+
   aveval = 0.
   do kl = 0, exmth
     aveval = aveval + wgt_areaave(x(kl,:,:),clat,1.0,0); - wgt_areaave(y(kl,:,:),clat,1.0,0)
@@ -1159,14 +1210,14 @@ end do
 ;******************************************************************
 ; The next ~125 lines is for making correlation plots
 if (justcorrelations.ge.1.and.justcorrelations.le.2) then
-  wtypebig1           = "png"       
+  wtypebig1           = "png"
   wtypebig1@wkWidth  = 1400
   wtypebig1@wkHeight = 1400
-  wtypebig2           = "png"       
+  wtypebig2           = "png"
   wtypebig2@wkWidth  = 1400
   wtypebig2@wkHeight = 1400
-  wks_cor1 = gsn_open_wks(wtypebig1,"cor_big1")  
-  wks_cor2 = gsn_open_wks(wtypebig2,"cor_big2")  
+  wks_cor1 = gsn_open_wks(wtypebig1,"cor_big1")
+  wks_cor2 = gsn_open_wks(wtypebig2,"cor_big2")
   if(justcorrelations.eq.1) then
     rescor1 = SetRes3(0.2,1,"sig")
     rescor2 = SetRes3(0.2,1,"sig")
@@ -1247,7 +1298,7 @@ if (justcorrelations.ge.1.and.justcorrelations.le.2) then
     delete(rcor3)
     delete(rcor4)
   end if
-  
+
   if (variable.le.4) then
     rcor1({88},{150}) = 1.0
     rcor2({88},{150}) = 1.0
@@ -1264,12 +1315,12 @@ if (justcorrelations.ge.1.and.justcorrelations.le.2) then
     rcor2@short_name = " "
     rcor2@units = " "
     rescor1@tiMainFontHeightF  = 0.012
-    rescor1@lbTitleFontHeightF= .012      
+    rescor1@lbTitleFontHeightF= .012
     rescor1@lbLabelFontHeightF= .01
     rescor2@tiMainFontHeightF  = 0.012
-    rescor2@lbTitleFontHeightF= .012      
+    rescor2@lbTitleFontHeightF= .012
     rescor2@lbLabelFontHeightF= .01
-    plot90 = gsn_csm_contour_map_polar(wks_cor1,rcor1,rescor1) 
+    plot90 = gsn_csm_contour_map_polar(wks_cor1,rcor1,rescor1)
     draw(plot90)
     frame(wks_cor1)
     delete(wks_cor1)
@@ -1279,8 +1330,8 @@ if (justcorrelations.ge.1.and.justcorrelations.le.2) then
     zz = systemfunc("mv -f "+filedir+"cor_big1.png /var/www/html/maps/cor_big1_a.png")
     zz = systemfunc("convert /var/www/html/maps/cor_big1_a.png -crop 1130x1400+150+0 -quality 80 /var/www/html/maps/cor_big1.jpg")
     zz = systemfunc("rm -f /var/www/html/maps/cor_big1_a.png")
-    
-    plot90 = gsn_csm_contour_map_polar(wks_cor2,rcor2,rescor2) 
+
+    plot90 = gsn_csm_contour_map_polar(wks_cor2,rcor2,rescor2)
     draw(plot90)
     frame(wks_cor2)
     delete(wks_cor2)
@@ -1291,7 +1342,10 @@ if (justcorrelations.ge.1.and.justcorrelations.le.2) then
     zz = systemfunc("convert /var/www/html/maps/cor_big2_a.png -crop 1130x1400+150+0 -quality 80 /var/www/html/maps/cor_big2.jpg")
     zz = systemfunc("rm -f /var/www/html/maps/cor_big2_a.png")
   end if
- 
+
+  ; TODO -- we may need to adapt the GUI so the
+  ; correlation plots only take the minimum
+  ; inputs required for that workflow.
   print("It appears that you only wanted to make a few correlation plots. Here they are:")
   print("")
   exit
@@ -1306,7 +1360,7 @@ end if
 cr1 = yrStrtClm-yrStrt-1
 cr2 = yrLastClm-yrStrt-1
 
-sb1 = 0  
+sb1 = 0
 sr1 = 0
 do df = cr1, cr2
   if(.not.ismissing(sstAnalysisBlue1(df))) then
@@ -1435,7 +1489,7 @@ do m = 0, NumAnalysisYears-1
     ;y=iceClm(usermonth+12-1-exmth:usermonth+12-1,{y1:y2},{x1:x2})
     y=oneVal(usermonth+12-1-exmth:usermonth+12-1,{y1:y2},{x1:x2})
   end if
-  xlat=x&lat  
+  xlat=x&lat
   clat=cos((4.*atan(1.)/180.)*xlat)
   aveval = 0.
   do ml = 0, exmth
@@ -1580,7 +1634,7 @@ end if
 
   useStandardized = 1            ; 1=standardized anomalies   2=raw anomalies
 
-  
+
   if (useStandardized.eq.0) then
   ; Blue2 and dependentVar2 use RMSE values from climatology of standardardized anomalies
     xx1 = slpAnalysisBlue2
@@ -1615,17 +1669,17 @@ N = dimsizes(ydep)
   X(4,:) = xx4
   X(5,:) = xx5
   ;X(6,:) = xx6
-  
+
   beta = reg_multlin(ydep,X,False)
 
   opt=True
-  
+
   nrow = dimsizes(ydep)
   np   = 5
   if (xx5(50).eq.tofloat(0.0)) then
     np   = 4
   end if
-  xp   = new( (/nrow,np/), typeof(xx1))  ; create an array to hold predictor variables   
+  xp   = new( (/nrow,np/), typeof(xx1))  ; create an array to hold predictor variables
   xp(:,0) = X(1,:)
   xp(:,1) = X(2,:)
   xp(:,2) = X(3,:)
@@ -1735,21 +1789,21 @@ end if
 if(.not.ismissing(sstAnalysisBlue2(17))) then
   do u = 0, NumAnalysisYears-1
     ui = (u*12) + usermonth - 1 + 12
-    weightedAnalysisBlue2(u) = (slpAnalysisBlue2(u) * tofloat(slpwgt)) + (h500AnalysisBlue2(u) * tofloat(h500wgt)) + (t2mAnalysisBlue2(u) * tofloat(t2mwgt)) + (t925AnalysisBlue2(u) * tofloat(t925wgt))  + (sstAnalysisBlue2(u) * tofloat(sstwgt)) 
-    weightedAnalysisRed2(u) = (slpAnalysisRed2(u) * tofloat(slpwgt)) + (h500AnalysisRed2(u) * tofloat(h500wgt)) + (t2mAnalysisRed2(u) * tofloat(t2mwgt)) + (t925AnalysisRed2(u) * tofloat(t925wgt))  + (sstAnalysisRed2(u) * tofloat(sstwgt))   
-    corArray1(u) = (slpAnalysisRed1(u) * tofloat(slpwgt)) + (h500AnalysisRed1(u) * tofloat(h500wgt)) + (t2mAnalysisRed1(u) * tofloat(t2mwgt)) + (t925AnalysisRed1(u) * tofloat(t925wgt))  + (sstAnalysisRed1(u) * tofloat(sstwgt))  
-    weightedAnalysisBlue2(u) = (slpAnalysisBlue2(u) * tofloat(slpwgt)) + (h500AnalysisBlue2(u) * tofloat(h500wgt)) + (t2mAnalysisBlue2(u) * tofloat(t2mwgt)) + (t925AnalysisBlue2(u) * tofloat(t925wgt))  + (sstAnalysisBlue2(u) * tofloat(sstwgt))   
-    weightedAnalysisRed2(u) = (slpAnalysisRed2(u) * tofloat(slpwgt)) + (h500AnalysisRed2(u) * tofloat(h500wgt)) + (t2mAnalysisRed2(u) * tofloat(t2mwgt)) + (t925AnalysisRed2(u) * tofloat(t925wgt))  + (sstAnalysisRed2(u) * tofloat(sstwgt))  
-    corArray1(u) = (slpAnalysisRed1(u) * tofloat(slpwgt)) + (h500AnalysisRed1(u) * tofloat(h500wgt)) + (t2mAnalysisRed1(u) * tofloat(t2mwgt)) + (t925AnalysisRed1(u) * tofloat(t925wgt))  + (sstAnalysisRed1(u) * tofloat(sstwgt))  
+    weightedAnalysisBlue2(u) = (slpAnalysisBlue2(u) * tofloat(slpwgt)) + (h500AnalysisBlue2(u) * tofloat(h500wgt)) + (t2mAnalysisBlue2(u) * tofloat(t2mwgt)) + (t925AnalysisBlue2(u) * tofloat(t925wgt))  + (sstAnalysisBlue2(u) * tofloat(sstwgt))
+    weightedAnalysisRed2(u) = (slpAnalysisRed2(u) * tofloat(slpwgt)) + (h500AnalysisRed2(u) * tofloat(h500wgt)) + (t2mAnalysisRed2(u) * tofloat(t2mwgt)) + (t925AnalysisRed2(u) * tofloat(t925wgt))  + (sstAnalysisRed2(u) * tofloat(sstwgt))
+    corArray1(u) = (slpAnalysisRed1(u) * tofloat(slpwgt)) + (h500AnalysisRed1(u) * tofloat(h500wgt)) + (t2mAnalysisRed1(u) * tofloat(t2mwgt)) + (t925AnalysisRed1(u) * tofloat(t925wgt))  + (sstAnalysisRed1(u) * tofloat(sstwgt))
+    weightedAnalysisBlue2(u) = (slpAnalysisBlue2(u) * tofloat(slpwgt)) + (h500AnalysisBlue2(u) * tofloat(h500wgt)) + (t2mAnalysisBlue2(u) * tofloat(t2mwgt)) + (t925AnalysisBlue2(u) * tofloat(t925wgt))  + (sstAnalysisBlue2(u) * tofloat(sstwgt))
+    weightedAnalysisRed2(u) = (slpAnalysisRed2(u) * tofloat(slpwgt)) + (h500AnalysisRed2(u) * tofloat(h500wgt)) + (t2mAnalysisRed2(u) * tofloat(t2mwgt)) + (t925AnalysisRed2(u) * tofloat(t925wgt))  + (sstAnalysisRed2(u) * tofloat(sstwgt))
+    corArray1(u) = (slpAnalysisRed1(u) * tofloat(slpwgt)) + (h500AnalysisRed1(u) * tofloat(h500wgt)) + (t2mAnalysisRed1(u) * tofloat(t2mwgt)) + (t925AnalysisRed1(u) * tofloat(t925wgt))  + (sstAnalysisRed1(u) * tofloat(sstwgt))
   end do
 end if
-  
+
 if(ismissing(sstAnalysisBlue2(17))) then
   do u = 0, NumAnalysisYears-1
     ui = (u*12) + usermonth - 1 + 12
-    weightedAnalysisBlue2(u) = (slpAnalysisBlue2(u) * tofloat(slpwgt)) + (h500AnalysisBlue2(u) * tofloat(h500wgt)) + (t2mAnalysisBlue2(u) * tofloat(t2mwgt)) + (t925AnalysisBlue2(u) * tofloat(t925wgt))  
-    weightedAnalysisRed2(u) = (slpAnalysisRed2(u) * tofloat(slpwgt)) + (h500AnalysisRed2(u) * tofloat(h500wgt)) + (t2mAnalysisRed2(u) * tofloat(t2mwgt)) + (t925AnalysisRed2(u) * tofloat(t925wgt))  
-    corArray1(u) = (slpAnalysisRed1(u) * tofloat(slpwgt)) + (h500AnalysisRed1(u) * tofloat(h500wgt)) + (t2mAnalysisRed1(u) * tofloat(t2mwgt)) + (t925AnalysisRed1(u) * tofloat(t925wgt))  
+    weightedAnalysisBlue2(u) = (slpAnalysisBlue2(u) * tofloat(slpwgt)) + (h500AnalysisBlue2(u) * tofloat(h500wgt)) + (t2mAnalysisBlue2(u) * tofloat(t2mwgt)) + (t925AnalysisBlue2(u) * tofloat(t925wgt))
+    weightedAnalysisRed2(u) = (slpAnalysisRed2(u) * tofloat(slpwgt)) + (h500AnalysisRed2(u) * tofloat(h500wgt)) + (t2mAnalysisRed2(u) * tofloat(t2mwgt)) + (t925AnalysisRed2(u) * tofloat(t925wgt))
+    corArray1(u) = (slpAnalysisRed1(u) * tofloat(slpwgt)) + (h500AnalysisRed1(u) * tofloat(h500wgt)) + (t2mAnalysisRed1(u) * tofloat(t2mwgt)) + (t925AnalysisRed1(u) * tofloat(t925wgt))
   end do
 end if
 
@@ -1757,10 +1811,10 @@ templevelORrh = " T"+getlev(templev)
 
 weightString = "Analog Years Based on Weighting-->~C~"+"SLP:"+sprintf("%6.2f",slpwgt)+" Z"+getlev(heightlev)+":"+sprintf("%6.2f",h500wgt)+" T2M:"+sprintf("%6.2f",t2mwgt)+templevelORrh+":"+sprintf("%6.2f",t925wgt)+" ~C~SST:"+sprintf("%6.2f",sstwgt)+", "+" "
 weightString2 = "SLP:"+sprintf("%6.2f",slpwgt)+" Z"+getlev(heightlev)+":"+sprintf("%6.2f",h500wgt)+" T2M:"+sprintf("%6.2f",t2mwgt)+templevelORrh+":"+sprintf("%6.2f",t925wgt)+" ~C~SST:"+sprintf("%6.2f",sstwgt)+" "
-  
 
 
-;; 11 seconds 
+
+;; 11 seconds
 
 ;print(weightedAnalysisBlue2+"   "+weightedAnalysisRed2)
 ;print(slpwgt+","+h500wgt+","+t2mwgt+","+t925wgt+","+sstwgt+","+autoWgt)
@@ -1847,7 +1901,7 @@ weightString2 = "SLP:"+sprintf("%6.2f",slpwgt)+" Z"+getlev(heightlev)+":"+sprint
     asciiwrite ("cortext3.txt" , cortext3)
     zz = systemfunc("mv -f "+filedir+"cortext3.txt /var/www/html/maps/cortext3.txt")
   end if
- 
+
 
 
 
@@ -1904,7 +1958,7 @@ if (justcorrelations.eq.3) then
           theavet925(m) = (dim_avg(t925(mi-exmth:mi,r,s)))
         end if
         if (useStandardized.eq.1) then
-          theaveslp(m) = (dim_avg(slp_std(mi-exmth:mi,r,s)))    
+          theaveslp(m) = (dim_avg(slp_std(mi-exmth:mi,r,s)))
           theavet2m(m) = (dim_avg(t2m_std(mi-exmth:mi,r,s)))
           theaveh500(m) = (dim_avg(h500_std(mi-exmth:mi,r,s)))
           theavet925(m) = (dim_avg(t925_std(mi-exmth:mi,r,s)))
@@ -1953,16 +2007,16 @@ if (justcorrelations.eq.3) then
       multRcor(5,r,s) = QuickProb2(ydep,theavet2m)
       multRcor(6,r,s) = QuickProb2(ydep,theavet925)
       if(a17.lt.0) then
-        a17@r = 0.0-a17@r 
+        a17@r = 0.0-a17@r
       end if
       if(b17.lt.0) then
-        b17@r = 0.0-b17@r 
+        b17@r = 0.0-b17@r
       end if
       if(c17.lt.0) then
-        c17@r = 0.0-c17@r 
+        c17@r = 0.0-c17@r
       end if
       if(d17.lt.0) then
-        d17@r = 0.0-d17@r 
+        d17@r = 0.0-d17@r
       end if
       multRcor(8,r,s) = a17@r
       multRcor(9,r,s) = b17@r
@@ -2013,21 +2067,21 @@ if (justcorrelations.eq.3) then
   multRcorStyleMR = True
   multRcorStyleMR = SetRes6(0.2,polarOrclyndrical)
   multRcorStyleMR@tiMainFontHeightF  = 0.01
-  multRcorStyleMR@lbTitleFontHeightF= 0.01      
+  multRcorStyleMR@lbTitleFontHeightF= 0.01
   multRcorStyleMR@lbLabelFontHeightF= 0.01
   multRcorStyleMR@tiXAxisFontHeightF = 0.02
 
   multRcorStyle = True
   multRcorStyle = SetRes2(polarOrclyndrical)   ; significance
   multRcorStyle@tiMainFontHeightF  = 0.01
-  multRcorStyle@lbTitleFontHeightF= 0.01      
+  multRcorStyle@lbTitleFontHeightF= 0.01
   multRcorStyle@lbLabelFontHeightF= 0.01
   multRcorStyle@tiXAxisFontHeightF = 0.02
 
   multRcorStyle2 = True
   multRcorStyle2 = SetRes3(0.2,polarOrclyndrical, "cor")
   multRcorStyle2@tiMainFontHeightF  = 0.01
-  multRcorStyle2@lbTitleFontHeightF= 0.01      
+  multRcorStyle2@lbTitleFontHeightF= 0.01
   multRcorStyle2@lbLabelFontHeightF= 0.01
   multRcorStyle2@tiXAxisFontHeightF = 0.02
 
@@ -2075,7 +2129,7 @@ if (justcorrelations.eq.3) then
 
 
 
-  wtypebig9           = "png"       
+  wtypebig9           = "png"
   wtypebig9@wkWidth  = 1400
   wtypebig9@wkHeight = 1400
 
@@ -2091,18 +2145,18 @@ if (justcorrelations.eq.3) then
   end if
 
 
-  wks_cor9 = gsn_open_wks(wtypebig9,"SingleRSLPcor")  
+  wks_cor9 = gsn_open_wks(wtypebig9,"SingleRSLPcor")
   multRcorStyle2@tiXAxisString = "SLP R Correlation for " + monthRangeString1 + " time period~C~to generate a "+monthRangeString2 + " "+ varName+" forecast in cyan box.~C~Lat: "+AK1 +"-"+AK2+" Lon: "+AK3+"-"+AK4
-  if (txtareayesno.lt.2) then 
+  if (txtareayesno.lt.2) then
     multRcorStyle2@tiXAxisString = "SLP R Correlation for " + monthRangeString1 + " time period~C~with a user-defined time series"
   end if
   if (polarOrclyndrical.eq.1) then
-    plot90 = gsn_csm_contour_map_polar(wks_cor9,multRcor(8,:,:),multRcorStyle2) 
+    plot90 = gsn_csm_contour_map_polar(wks_cor9,multRcor(8,:,:),multRcorStyle2)
   end if
   if (polarOrclyndrical.eq.2) then
-    plot90 = gsn_csm_contour_map(wks_cor9,multRcor(8,:,:),multRcorStyle2) 
+    plot90 = gsn_csm_contour_map(wks_cor9,multRcor(8,:,:),multRcorStyle2)
   end if
-  if (txtareayesno.eq.2) then 
+  if (txtareayesno.eq.2) then
     poly90a = gsn_add_polyline(wks_cor9,plot90,AKlon_box,AKlat_box,AKboxres)
   end if
   draw(plot90)
@@ -2118,18 +2172,18 @@ if (justcorrelations.eq.3) then
   zz = systemfunc("rm -f /var/www/html/maps/SingleRSLPcor_a.png")
 
 
-  wks_cor9 = gsn_open_wks(wtypebig9,"SingleRH500cor")  
+  wks_cor9 = gsn_open_wks(wtypebig9,"SingleRH500cor")
   multRcorStyle2@tiXAxisString = "Z"+getlev(heightlev) + " R Correlation for " + monthRangeString1 + " time period~C~to generate a "+monthRangeString2 + " "+ varName+" forecast in cyan box.~C~Lat: "+AK1 +"-"+AK2+" Lon: "+AK3+"-"+AK4
-  if (txtareayesno.lt.2) then 
+  if (txtareayesno.lt.2) then
     multRcorStyle2@tiXAxisString = "SLP R Correlation for " + monthRangeString1 + " time period~C~with a user-defined time series"
   end if
   if (polarOrclyndrical.eq.1) then
-    plot90 = gsn_csm_contour_map_polar(wks_cor9,multRcor(9,:,:),multRcorStyle2) 
+    plot90 = gsn_csm_contour_map_polar(wks_cor9,multRcor(9,:,:),multRcorStyle2)
   end if
   if (polarOrclyndrical.eq.2) then
-    plot90 = gsn_csm_contour_map(wks_cor9,multRcor(9,:,:),multRcorStyle2) 
+    plot90 = gsn_csm_contour_map(wks_cor9,multRcor(9,:,:),multRcorStyle2)
   end if
-  if (txtareayesno.eq.2) then 
+  if (txtareayesno.eq.2) then
     poly90a = gsn_add_polyline(wks_cor9,plot90,AKlon_box,AKlat_box,AKboxres)
   end if
   draw(plot90)
@@ -2145,18 +2199,18 @@ if (justcorrelations.eq.3) then
   zz = systemfunc("rm -f /var/www/html/maps/SingleRH500cor_a.png")
 
 
-  wks_cor9 = gsn_open_wks(wtypebig9,"SingleRT2Mcor")  
+  wks_cor9 = gsn_open_wks(wtypebig9,"SingleRT2Mcor")
   multRcorStyle2@tiXAxisString = "T2M R Correlation for " + monthRangeString1 + " time period~C~to generate a "+monthRangeString2 + " "+ varName+" forecast in cyan box.~C~Lat: "+AK1 +"-"+AK2+" Lon: "+AK3+"-"+AK4
-  if (txtareayesno.lt.2) then 
+  if (txtareayesno.lt.2) then
     multRcorStyle2@tiXAxisString = "SLP R Correlation for " + monthRangeString1 + " time period~C~with a user-defined time series"
   end if
   if (polarOrclyndrical.eq.1) then
-    plot90 = gsn_csm_contour_map_polar(wks_cor9,multRcor(10,:,:),multRcorStyle2) 
+    plot90 = gsn_csm_contour_map_polar(wks_cor9,multRcor(10,:,:),multRcorStyle2)
   end if
   if (polarOrclyndrical.eq.2) then
-    plot90 = gsn_csm_contour_map(wks_cor9,multRcor(10,:,:),multRcorStyle2) 
+    plot90 = gsn_csm_contour_map(wks_cor9,multRcor(10,:,:),multRcorStyle2)
   end if
-  if (txtareayesno.eq.2) then 
+  if (txtareayesno.eq.2) then
     poly90a = gsn_add_polyline(wks_cor9,plot90,AKlon_box,AKlat_box,AKboxres)
   end if
   draw(plot90)
@@ -2172,18 +2226,18 @@ if (justcorrelations.eq.3) then
   zz = systemfunc("rm -f /var/www/html/maps/SingleRT2Mcor_a.png")
 
 
-  wks_cor9 = gsn_open_wks(wtypebig9,"SingleRT925cor")  
+  wks_cor9 = gsn_open_wks(wtypebig9,"SingleRT925cor")
   multRcorStyle2@tiXAxisString = "T"+getlev(templev) + " R Correlation for " + monthRangeString1 + " time period~C~to generate a "+monthRangeString2 + " "+ varName+" forecast in cyan box.~C~Lat: "+AK1 +"-"+AK2+" Lon: "+AK3+"-"+AK4
-  if (txtareayesno.lt.2) then 
+  if (txtareayesno.lt.2) then
     multRcorStyle2@tiXAxisString = "SLP R Correlation for " + monthRangeString1 + " time period~C~with a user-defined time series"
   end if
   if (polarOrclyndrical.eq.1) then
-    plot90 = gsn_csm_contour_map_polar(wks_cor9,multRcor(11,:,:),multRcorStyle2) 
+    plot90 = gsn_csm_contour_map_polar(wks_cor9,multRcor(11,:,:),multRcorStyle2)
   end if
   if (polarOrclyndrical.eq.2) then
-    plot90 = gsn_csm_contour_map(wks_cor9,multRcor(11,:,:),multRcorStyle2) 
+    plot90 = gsn_csm_contour_map(wks_cor9,multRcor(11,:,:),multRcorStyle2)
   end if
-  if (txtareayesno.eq.2) then 
+  if (txtareayesno.eq.2) then
     poly90a = gsn_add_polyline(wks_cor9,plot90,AKlon_box,AKlat_box,AKboxres)
   end if
   draw(plot90)
@@ -2199,18 +2253,18 @@ if (justcorrelations.eq.3) then
   zz = systemfunc("rm -f /var/www/html/maps/SingleRT925cor_a.png")
 
 
-  wks_cor9 = gsn_open_wks(wtypebig9,"SingleRSSTcor")  
+  wks_cor9 = gsn_open_wks(wtypebig9,"SingleRSSTcor")
   multRcorStyle2@tiXAxisString = "SST R Correlation for " + monthRangeString1 + " time period~C~to generate a "+monthRangeString2 + " "+ varName+" forecast in cyan box.~C~Lat: "+AK1 +"-"+AK2+" Lon: "+AK3+"-"+AK4
-  if (txtareayesno.lt.2) then 
+  if (txtareayesno.lt.2) then
     multRcorStyle2@tiXAxisString = "SLP R Correlation for " + monthRangeString1 + " time period~C~with a user-defined time series"
   end if
   if (polarOrclyndrical.eq.1) then
-    plot90 = gsn_csm_contour_map_polar(wks_cor9,multRcor(12,:,:),multRcorStyle2) 
+    plot90 = gsn_csm_contour_map_polar(wks_cor9,multRcor(12,:,:),multRcorStyle2)
   end if
   if (polarOrclyndrical.eq.2) then
-    plot90 = gsn_csm_contour_map(wks_cor9,multRcor(12,:,:),multRcorStyle2) 
+    plot90 = gsn_csm_contour_map(wks_cor9,multRcor(12,:,:),multRcorStyle2)
   end if
-  if (txtareayesno.eq.2) then 
+  if (txtareayesno.eq.2) then
     poly90a = gsn_add_polyline(wks_cor9,plot90,AKlon_box,AKlat_box,AKboxres)
   end if
   draw(plot90)
@@ -2245,18 +2299,18 @@ if (justcorrelations.eq.3) then
     multRcor@long_name = multRcor@long_name+"  [Using Raw Anomalies]"
   end if
 
-  wks_cor9 = gsn_open_wks(wtypebig9,"SingleRSLPsig")  
+  wks_cor9 = gsn_open_wks(wtypebig9,"SingleRSLPsig")
   multRcorStyle@tiXAxisString = "SLP Significance for " + monthRangeString1 + " time period~C~to generate a "+monthRangeString2 + " "+ varName+" forecast in cyan box.~C~Lat: "+AK1 +"-"+AK2+" Lon: "+AK3+"-"+AK4
-  if (txtareayesno.lt.2) then 
+  if (txtareayesno.lt.2) then
     multRcorStyle2@tiXAxisString = "SLP Significance for " + monthRangeString1 + " time period~C~with a user-defined time series"
   end if
   if (polarOrclyndrical.eq.1) then
-    plot90 = gsn_csm_contour_map_polar(wks_cor9,multRcor(3,:,:),multRcorStyle) 
+    plot90 = gsn_csm_contour_map_polar(wks_cor9,multRcor(3,:,:),multRcorStyle)
   end if
   if (polarOrclyndrical.eq.2) then
-    plot90 = gsn_csm_contour_map(wks_cor9,multRcor(3,:,:),multRcorStyle) 
+    plot90 = gsn_csm_contour_map(wks_cor9,multRcor(3,:,:),multRcorStyle)
   end if
-  if (txtareayesno.eq.2) then 
+  if (txtareayesno.eq.2) then
     poly90a = gsn_add_polyline(wks_cor9,plot90,AKlon_box,AKlat_box,AKboxres)
   end if
   draw(plot90)
@@ -2272,18 +2326,18 @@ if (justcorrelations.eq.3) then
   zz = systemfunc("rm -f /var/www/html/maps/SingleRSLPsig_a.png")
 
 
-  wks_cor9 = gsn_open_wks(wtypebig9,"SingleRH500sig")  
+  wks_cor9 = gsn_open_wks(wtypebig9,"SingleRH500sig")
   multRcorStyle@tiXAxisString = "Z"+getlev(heightlev) + " Significance for " + monthRangeString1 + " time period~C~to generate a "+monthRangeString2 + " "+ varName+" forecast in cyan box.~C~Lat: "+AK1 +"-"+AK2+" Lon: "+AK3+"-"+AK4
-  if (txtareayesno.lt.2) then 
+  if (txtareayesno.lt.2) then
     multRcorStyle2@tiXAxisString = "SLP Significance for " + monthRangeString1 + " time period~C~with a user-defined time series"
   end if
   if (polarOrclyndrical.eq.1) then
-    plot90 = gsn_csm_contour_map_polar(wks_cor9,multRcor(4,:,:),multRcorStyle) 
+    plot90 = gsn_csm_contour_map_polar(wks_cor9,multRcor(4,:,:),multRcorStyle)
   end if
   if (polarOrclyndrical.eq.2) then
-    plot90 = gsn_csm_contour_map(wks_cor9,multRcor(4,:,:),multRcorStyle) 
+    plot90 = gsn_csm_contour_map(wks_cor9,multRcor(4,:,:),multRcorStyle)
   end if
-  if (txtareayesno.eq.2) then 
+  if (txtareayesno.eq.2) then
     poly90a = gsn_add_polyline(wks_cor9,plot90,AKlon_box,AKlat_box,AKboxres)
   end if
   draw(plot90)
@@ -2299,18 +2353,18 @@ if (justcorrelations.eq.3) then
   zz = systemfunc("rm -f /var/www/html/maps/SingleRH500sig_a.png")
 
 
-  wks_cor9 = gsn_open_wks(wtypebig9,"SingleRT2Msig")  
+  wks_cor9 = gsn_open_wks(wtypebig9,"SingleRT2Msig")
   multRcorStyle@tiXAxisString = "T2M Significance for " + monthRangeString1 + " time period~C~to generate a "+monthRangeString2 + " "+ varName+" forecast in cyan box.~C~Lat: "+AK1 +"-"+AK2+" Lon: "+AK3+"-"+AK4
-  if (txtareayesno.lt.2) then 
+  if (txtareayesno.lt.2) then
     multRcorStyle2@tiXAxisString = "SLP Significance for " + monthRangeString1 + " time period~C~with a user-defined time series"
   end if
   if (polarOrclyndrical.eq.1) then
-    plot90 = gsn_csm_contour_map_polar(wks_cor9,multRcor(5,:,:),multRcorStyle) 
+    plot90 = gsn_csm_contour_map_polar(wks_cor9,multRcor(5,:,:),multRcorStyle)
   end if
   if (polarOrclyndrical.eq.2) then
-    plot90 = gsn_csm_contour_map(wks_cor9,multRcor(5,:,:),multRcorStyle) 
+    plot90 = gsn_csm_contour_map(wks_cor9,multRcor(5,:,:),multRcorStyle)
   end if
-  if (txtareayesno.eq.2) then 
+  if (txtareayesno.eq.2) then
     poly90a = gsn_add_polyline(wks_cor9,plot90,AKlon_box,AKlat_box,AKboxres)
   end if
   draw(plot90)
@@ -2326,18 +2380,18 @@ if (justcorrelations.eq.3) then
   zz = systemfunc("rm -f /var/www/html/maps/SingleRT2Msig_a.png")
 
 
-  wks_cor9 = gsn_open_wks(wtypebig9,"SingleRT925sig")  
+  wks_cor9 = gsn_open_wks(wtypebig9,"SingleRT925sig")
   multRcorStyle@tiXAxisString = "T"+getlev(templev) + " Significance for " + monthRangeString1 + " time period~C~to generate a "+monthRangeString2 + " "+ varName+" forecast in cyan box.~C~Lat: "+AK1 +"-"+AK2+" Lon: "+AK3+"-"+AK4
-  if (txtareayesno.lt.2) then 
+  if (txtareayesno.lt.2) then
     multRcorStyle2@tiXAxisString = "SLP Significance for " + monthRangeString1 + " time period~C~with a user-defined time series"
   end if
   if (polarOrclyndrical.eq.1) then
-    plot90 = gsn_csm_contour_map_polar(wks_cor9,multRcor(6,:,:),multRcorStyle) 
+    plot90 = gsn_csm_contour_map_polar(wks_cor9,multRcor(6,:,:),multRcorStyle)
   end if
   if (polarOrclyndrical.eq.2) then
-    plot90 = gsn_csm_contour_map(wks_cor9,multRcor(6,:,:),multRcorStyle) 
+    plot90 = gsn_csm_contour_map(wks_cor9,multRcor(6,:,:),multRcorStyle)
   end if
-  if (txtareayesno.eq.2) then 
+  if (txtareayesno.eq.2) then
     poly90a = gsn_add_polyline(wks_cor9,plot90,AKlon_box,AKlat_box,AKboxres)
   end if
   draw(plot90)
@@ -2353,18 +2407,18 @@ if (justcorrelations.eq.3) then
   zz = systemfunc("rm -f /var/www/html/maps/SingleRT925sig_a.png")
 
 
-  wks_cor9 = gsn_open_wks(wtypebig9,"SingleRSSTsig")  
+  wks_cor9 = gsn_open_wks(wtypebig9,"SingleRSSTsig")
   multRcorStyle@tiXAxisString = "SST Significance for " + monthRangeString1 + " time period~C~to generate a "+monthRangeString2 + " "+ varName+" forecast in cyan box.~C~Lat: "+AK1 +"-"+AK2+" Lon: "+AK3+"-"+AK4
-  if (txtareayesno.lt.2) then 
+  if (txtareayesno.lt.2) then
     multRcorStyle2@tiXAxisString = "SLP Significance for " + monthRangeString1 + " time period~C~with a user-defined time series"
   end if
   if (polarOrclyndrical.eq.1) then
-    plot90 = gsn_csm_contour_map_polar(wks_cor9,multRcor(7,:,:),multRcorStyle) 
+    plot90 = gsn_csm_contour_map_polar(wks_cor9,multRcor(7,:,:),multRcorStyle)
   end if
   if (polarOrclyndrical.eq.2) then
-    plot90 = gsn_csm_contour_map(wks_cor9,multRcor(7,:,:),multRcorStyle) 
+    plot90 = gsn_csm_contour_map(wks_cor9,multRcor(7,:,:),multRcorStyle)
   end if
-  if (txtareayesno.eq.2) then 
+  if (txtareayesno.eq.2) then
     poly90a = gsn_add_polyline(wks_cor9,plot90,AKlon_box,AKlat_box,AKboxres)
   end if
   draw(plot90)
@@ -2390,18 +2444,18 @@ if (justcorrelations.eq.3) then
   if (detrend.eq.1) then
     multRcor@long_name = "Multiple Linear Regression Significance Plot (Detrended)"
   end if
-  wks_cor9 = gsn_open_wks(wtypebig9,"MultipleR")  
+  wks_cor9 = gsn_open_wks(wtypebig9,"MultipleR")
   multRcorStyleMR@tiXAxisString = "Composite Multiple-R for " + monthRangeString1 + " time period~C~to generate a "+monthRangeString2 + " "+ varName+" forecast in cyan box.~C~Lat: "+AK1 +"-"+AK2+" Lon: "+AK3+"-"+AK4
-  if (txtareayesno.lt.2) then 
+  if (txtareayesno.lt.2) then
     multRcorStyle2@tiXAxisString = "Composite Multiple-R for " + monthRangeString1 + " time period~C~with a user-defined time series"
   end if
   if (polarOrclyndrical.eq.1) then
-    plot90 = gsn_csm_contour_map_polar(wks_cor9,multRcor(2,:,:),multRcorStyleMR) 
+    plot90 = gsn_csm_contour_map_polar(wks_cor9,multRcor(2,:,:),multRcorStyleMR)
   end if
   if (polarOrclyndrical.eq.2) then
-    plot90 = gsn_csm_contour_map(wks_cor9,multRcor(2,:,:),multRcorStyleMR) 
+    plot90 = gsn_csm_contour_map(wks_cor9,multRcor(2,:,:),multRcorStyleMR)
   end if
-  if (txtareayesno.eq.2) then 
+  if (txtareayesno.eq.2) then
     poly90a = gsn_add_polyline(wks_cor9,plot90,AKlon_box,AKlat_box,AKboxres)
   end if
   draw(plot90)
@@ -2446,13 +2500,13 @@ end if
       ti = (p*12) + usermonth - 1
       theyear = yrStrt + p
       jk = ti + fmnths + fmnths2 - 1
-      if (jk.lt.totalDims) then      
+      if (jk.lt.totalDims) then
         ;; Compute average values for each of the four variables for each year
         ;; and subtract it from the target user month/year value. This is "1" array.
         ;; The "2" array holds the actual average (box) value.
         maxIndex = p   ; maxIndex is the index of the last year included
         ;print("year = "+theyear+"   jk = "+jk)
-        sz = 0.            
+        sz = 0.
         hz = 0.
         tz = 0.
         vz = 0.
@@ -2465,7 +2519,7 @@ end if
 
         x=slp(ti-exmth:ti,{y1:y2},{x1:x2})
         y=slp(thetime-exmth:thetime,{y1:y2},{x1:x2})
-        
+
         xlat=x&lat
         clat=cos((4.*atan(1.)/180.)*xlat)
         aveval1 = 0.
@@ -2577,7 +2631,7 @@ end if
   do p = 1, 72   ; change to 70 when Feb. 2018 data comes in
       ti = (p*12) + usermonth - 1
       theyear = yrStrt + p
-      if (.not.ismissing(YearArray(p)) .and. ti.lt.totalDims) then  
+      if (.not.ismissing(YearArray(p)) .and. ti.lt.totalDims) then
         tempval = ti - exmth
         m1 = ti-exmth
         m2 = ti
@@ -2797,16 +2851,16 @@ end if
 
 
 
-        ;;; Create Weighted Index 
-        ;;; index values divided by 3 to have them at 
+        ;;; Create Weighted Index
+        ;;; index values divided by 3 to have them at
         ;;; approximate same scale as R-values from slp, etc.
         if (.not.ismissing(sstArray3b(p))) then
           weightedArray1(p) = (slpArray3b(p) * tofloat(slpwgt)) + (h500Array3b(p) * tofloat(h500wgt)) + (t2mArray3b(p) * tofloat(t2mwgt)) + (t925Array3b(p) * tofloat(t925wgt))  + (sstArray3b(p) *  tofloat(sstwgt))
-          weightedArraySpecial(p) = (slpArray3c(p) * tofloat(slpwgt)) + (h500Array3c(p) * tofloat(h500wgt)) + (t2mArray3c(p) * tofloat(t2mwgt)) + (t925Array3c(p) * tofloat(t925wgt))  + (sstArray3c(p) * tofloat(sstwgt))  
+          weightedArraySpecial(p) = (slpArray3c(p) * tofloat(slpwgt)) + (h500Array3c(p) * tofloat(h500wgt)) + (t2mArray3c(p) * tofloat(t2mwgt)) + (t925Array3c(p) * tofloat(t925wgt))  + (sstArray3c(p) * tofloat(sstwgt))
         end if
         if (ismissing(sstArray3b(p))) then
-          weightedArray1(p) = (slpArray3b(p) * tofloat(slpwgt)) + (h500Array3b(p) * tofloat(h500wgt)) + (t2mArray3b(p) * tofloat(t2mwgt)) + (t925Array3b(p) * tofloat(t925wgt))  
-          weightedArraySpecial(p) = (slpArray3c(p) * tofloat(slpwgt)) + (h500Array3c(p) * tofloat(h500wgt)) + (t2mArray3c(p) * tofloat(t2mwgt)) + (t925Array3c(p) * tofloat(t925wgt)) 
+          weightedArray1(p) = (slpArray3b(p) * tofloat(slpwgt)) + (h500Array3b(p) * tofloat(h500wgt)) + (t2mArray3b(p) * tofloat(t2mwgt)) + (t925Array3b(p) * tofloat(t925wgt))
+          weightedArraySpecial(p) = (slpArray3c(p) * tofloat(slpwgt)) + (h500Array3c(p) * tofloat(h500wgt)) + (t2mArray3c(p) * tofloat(t2mwgt)) + (t925Array3c(p) * tofloat(t925wgt))
         end if
 
         if (theyear.eq.useryear) then
@@ -2851,7 +2905,7 @@ end if
   sstArray4(0) =  0.0
   iceArray4(0) =  0.0
 
-;; Create new arrays that contain month/year averages of the 
+;; Create new arrays that contain month/year averages of the
 ;; 4 variables. A value of 0 is in the first index entry, but
 ;; everything else has a value. This is for the R-value calculation.
 
@@ -2866,13 +2920,13 @@ currentYearM1 = currentYear-1
 currentYearM2 = currentYear-2
 
 if (useryear.eq.currentYear) then  ; change to .gt.10 with October 2016 data
-  doLast = False                
+  doLast = False
 end if
 if (useryear.eq.currentYearM1 .and. dcomp.gt.currentMonth) then  ; change to .gt.9 with September 2016 data
-  doLast = False                
+  doLast = False
 end if
 if (useryear.eq.currentYearM2 .and. dcomp.gt.currentMonthP12) then   ; change to .gt.21 with September 2016 data
-  doLast = False                
+  doLast = False
 end if
 
 
@@ -2890,7 +2944,7 @@ end if
 
 
 RMS_Array_Size = maxIndex
-if (ismissing(YearArray(72)).eq.False .and. doLast.eq.False) then  ; Change to 68 with Jan 2016 data 
+if (ismissing(YearArray(72)).eq.False .and. doLast.eq.False) then  ; Change to 68 with Jan 2016 data
   RMS_Array_Size = maxIndex - 1
 end if
 
@@ -2916,12 +2970,12 @@ end if
   end do
 
 
-  AKslpArray = new(RMS_Array_Size,float) 
-  AKh500Array = new(RMS_Array_Size,float) 
-  AKt2mArray = new(RMS_Array_Size,float) 
-  AKt925Array = new(RMS_Array_Size,float) 
-  AKsstArray = new(RMS_Array_Size,float) 
-  AKiceArray = new(RMS_Array_Size,float) 
+  AKslpArray = new(RMS_Array_Size,float)
+  AKh500Array = new(RMS_Array_Size,float)
+  AKt2mArray = new(RMS_Array_Size,float)
+  AKt925Array = new(RMS_Array_Size,float)
+  AKsstArray = new(RMS_Array_Size,float)
+  AKiceArray = new(RMS_Array_Size,float)
   AKboxslpArray3 = new(RMS_Array_Size,float)
   AKboxh500Array3 = new(RMS_Array_Size,float)
   AKboxt2mArray3 = new(RMS_Array_Size,float)
@@ -3010,7 +3064,7 @@ end if
     delete(clat)
 
 
-    if (indexC.lt.totalDims .and. indexD.lt.totalDims) then   
+    if (indexC.lt.totalDims .and. indexD.lt.totalDims) then
 
       x=slp(indexA:indexB,{AK1:AK2},{AK3:AK4})
       xlat=x&lat
@@ -3242,19 +3296,19 @@ r_square_ice = R_value(iceBlueBoxMatchYears,iceRedBoxMatchYears)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Do a sort of the annual slp, h500, t2m, and t925 arrays from 
+;;; Do a sort of the annual slp, h500, t2m, and t925 arrays from
 ;;; previous section to choose the top 5 matches. (Section 9)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-  ii = 1 
+  ii = 1
   dcomp = usermonth+fmnths+fmnths2-1
 
   if (useryear.eq.2020 .and. dcomp.gt.currentMonth) then  ; this means the forecast month is in the future
-    ii = ii - 1                
+    ii = ii - 1
   end if
   currentMonth12=currentMonth+12
   if (useryear.eq.2020 .and. dcomp.gt.currentMonth12) then     ; this means the forecast month is in the future
-    ii = ii - 1                
+    ii = ii - 1
   end if
 
 
@@ -3264,16 +3318,16 @@ r_square_ice = R_value(iceBlueBoxMatchYears,iceRedBoxMatchYears)
   ddd = t925Array3b    ; array contains the t925 anomaly for each mo/yr (-) selected mo/yr
   eee = sstArray3b    ; array contains the sst anomaly for each mo/yr (-) selected mo/yr
   fff = iceArray3b    ; array contains the icec anomaly for each mo/yr (-) selected mo/yr
-  sss = specialArray1    ; array contains the special 
+  sss = specialArray1    ; array contains the special
   www = weightedArray1    ; array contains the weighted standard anomaly for each mo/yr (-) selected mo/yr
 
 
   aaaa = dim_pqsort_n(aaa,2,0)   ; sorted anomalies. Index 0 will be
   bbbb = dim_pqsort_n(bbb,2,0)   ; a missing value for 2016 and index
-  cccc = dim_pqsort_n(ccc,2,0)   ; 1 will be a value of zero since mo/yr 
+  cccc = dim_pqsort_n(ccc,2,0)   ; 1 will be a value of zero since mo/yr
   dddd = dim_pqsort_n(ddd,2,0)   ; of target is one of array entries.
-  eeee = dim_pqsort_n(eee,2,0)   ; 
-  ffff = dim_pqsort_n(fff,2,0)   ; 
+  eeee = dim_pqsort_n(eee,2,0)   ;
+  ffff = dim_pqsort_n(fff,2,0)   ;
   wwww = dim_pqsort_n(www,2,0)   ; the is the weighted array
 
   xxyy = wwww
@@ -3338,32 +3392,32 @@ zz = systemfunc("mv -f "+filedir+"specialresult.txt /var/www/html/maps/specialre
 ;*****
 print("Sept sea ice forecast for "+usermonth+"/"+useryear+" using "+exmthlabel+" months of data: "+YearArray(xxyy(ii))+","+YearArray(xxyy(ii+1))+","+YearArray(xxyy(ii+2))+","+YearArray(xxyy(ii+3))+","+YearArray(xxyy(ii+4))+","+specialResult)
 
-;print("usermonth ="+usermonth+"")  
-;print("useryear ="+useryear+"")  
-;print("back months to assess = "+exmthlabel+"")  
+;print("usermonth ="+usermonth+"")
+;print("useryear ="+useryear+"")
+;print("back months to assess = "+exmthlabel+"")
 ;print("start months forward = "+fmnths+"")
-;print("forward months to forecast for = "+fmnths2+"")     
-;print("heightlev ="+heightlev+"")   
-;print("templev ="+templev+"")    
-;print("variable to forecast = "+variable+"")   
-;print("slpwgt ="+slpwgt+"")    
-;print("h500wgt ="+h500wgt+"")     
-;print("t2mwgt ="+t2mwgt+"")    
-;print("t925wgt ="+t925wgt+"")     
-;print("sstwgt ="+sstwgt+"")    
-;print(y1+"")     
-;print(y2+"")    
-;print(x1+"")     
-;print(x2+"")     
-;print(AK1+"")    
-;print(AK2+"")    
-;print(AK3+"")    
-;print(AK4+"")     
-;print("ID = "+ID+"")    
-;print("detrendID = "+detrend+"")     
-;print("autoWgt = "+autoWgt+"")    
-;print("indexchoice = "+indexchoice+"")    
-;print("specialnum = "+specialnum+"")    
+;print("forward months to forecast for = "+fmnths2+"")
+;print("heightlev ="+heightlev+"")
+;print("templev ="+templev+"")
+;print("variable to forecast = "+variable+"")
+;print("slpwgt ="+slpwgt+"")
+;print("h500wgt ="+h500wgt+"")
+;print("t2mwgt ="+t2mwgt+"")
+;print("t925wgt ="+t925wgt+"")
+;print("sstwgt ="+sstwgt+"")
+;print(y1+"")
+;print(y2+"")
+;print(x1+"")
+;print(x2+"")
+;print(AK1+"")
+;print(AK2+"")
+;print(AK3+"")
+;print(AK4+"")
+;print("ID = "+ID+"")
+;print("detrendID = "+detrend+"")
+;print("autoWgt = "+autoWgt+"")
+;print("indexchoice = "+indexchoice+"")
+;print("specialnum = "+specialnum+"")
 ;print(beta2)
 ;print(" ")
 ;print("YearArray,weightedArray1 = "+YearArray+","+weightedArray1)
@@ -3380,7 +3434,7 @@ print("Sept sea ice forecast for "+usermonth+"/"+useryear+" using "+exmthlabel+"
   WeightedDiff = (weightedArray1(wwww(ii)) + weightedArray1(wwww(ii+1)) + weightedArray1(wwww(ii+2)) + weightedArray1(wwww(ii+3)) + weightedArray1(wwww(ii+4))) /5.0
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; end the sorting of anomaly arrays
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 
@@ -3390,7 +3444,7 @@ print("Sept sea ice forecast for "+usermonth+"/"+useryear+" using "+exmthlabel+"
 ;;; analog years. (Section 10)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-  j = ii   ; index to be passed to function 
+  j = ii   ; index to be passed to function
 
   slpInd = new(10,integer)
   h500Ind = new(10,integer)
@@ -3428,8 +3482,8 @@ end if
     iceInd(qq-1+5) = tointeger(((YearArray(ffff(j))-1948)*12)+usermonth-1+fmnths+fmnths2-1)
     weightedInd(qq-1)   = tointeger(((YearArray(wwww(j))-1948)*12)+usermonth-1+fmnths)
     weightedInd(qq-1+5) = tointeger(((YearArray(wwww(j))-1948)*12)+usermonth-1+fmnths+fmnths2-1)
-    ClmInd(qq-1)   = tointeger(usermonth+12-1+fmnths)              
-    ClmInd(qq-1+5) = tointeger(usermonth+12-1+fmnths+fmnths2-1)    
+    ClmInd(qq-1)   = tointeger(usermonth+12-1+fmnths)
+    ClmInd(qq-1+5) = tointeger(usermonth+12-1+fmnths+fmnths2-1)
     j = j+1
   end do
 
@@ -3479,7 +3533,7 @@ targeticeanom    = dim_avg_n_Wrap(icec(thetime-exmth:thetime,:,:),0) - dim_avg_n
 top5ice          = Spatial5Array(icec,weightedInd)                      ; spatial array of top 5 best analogs
 top5iceAnom      = Spatial5ArrayAnom(icec,weightedInd,iceClm,ClmInd)    ; calc top5 anomaly
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; ends section that populates the annual 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; ends section that populates the annual
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; (top 5) arrays
 
 
@@ -3689,10 +3743,10 @@ res = True
 
 wks_pan = gsn_open_wks(wtype,"pan_a")
 res = SetRes1(lowRange, highRange, interval,25,210)
-AKdiff = W_ave(cdfAll,thetime-exmth,thetime,y1,y2,x1,x2) 
+AKdiff = W_ave(cdfAll,thetime-exmth,thetime,y1,y2,x1,x2)
 AKdiff2 = W_ave(cdfAll,thetime-exmth,thetime,y1,y2,x1,x2) - W_ave(cdfClm,usermonth+12-1-exmth,usermonth+12-1,y1,y2,x1,x2)
 res@tiXAxisString = varName+" Anomaly for " + monthRangeString1 + " " + useryearString1 + "~C~Ave For Analysis Area is "+sprintf("%6.3f",AKdiff)+" "+varUnits+ "~C~Ave Anom For Forecast Area is "+sprintf("%6.3f",AKdiff2)+" "+varUnits+".~C~(c) University of Alaska Fairbanks"
-plot0 = gsn_csm_contour_map_polar(wks_pan,targetanom,res) 
+plot0 = gsn_csm_contour_map_polar(wks_pan,targetanom,res)
 poly0a = gsn_add_polyline(wks_pan,plot0,lon_box,lat_box,boxres)
 poly0b = gsn_add_polyline(wks_pan,plot0,AKlon_box,AKlat_box,AKboxres)
 draw(plot0)
@@ -3702,7 +3756,7 @@ delete(wks_pan)
 wks_pan = gsn_open_wks(wtype,"pan_b")
 res = SetRes1(lowRange/4.0, highRange/4.0, interval/2.0,25,210)
 tempvar2 = cdfAll(0,:,:)
-tempvar2 = dim_avg_n_Wrap(top5(0:numAnalogsToUse-1,:,:),0) - dim_avg_n_Wrap(cdfClm(usermonth+12-1+fmnths:usermonth+12-1+fmnths+fmnths2-1,:,:),0) 
+tempvar2 = dim_avg_n_Wrap(top5(0:numAnalogsToUse-1,:,:),0) - dim_avg_n_Wrap(cdfClm(usermonth+12-1+fmnths:usermonth+12-1+fmnths+fmnths2-1,:,:),0)
 ;tempvar2 = (dim_avg_n_Wrap(top5(0:numAnalogsToUse-1,:,:),0) - dim_avg_n_Wrap(cdfClm(usermonth+12-1+fmnths:usermonth+12-1+fmnths+fmnths2-1,:,:),0) ) * 5.0
 AKdiff = W_ave(top5anom,0,numAnalogsToUse-1,AK1,AK2,AK3,AK4)
 res@tiXAxisString = varName+" Anomaly forecast during " + monthRangeString2 +" time period.~C~Using top 5 analogs for " + monthRangeString1 + " " + useryear + ".~C~Years are : "+YearArray(sortInx(ii))+", "+YearArray(sortInx(ii+1))+", "+YearArray(sortInx(ii+2))+", "+YearArray(sortInx(ii+3))+", and "+YearArray(sortInx(ii+4))+"."+"~C~(c) University of Alaska Fairbanks"
@@ -3735,9 +3789,9 @@ index1= tointeger(((YearArray(sortInx(ii))-1948)*12)+ usermonth - 1 - exmth)
 index2= tointeger(((YearArray(sortInx(ii))-1948)*12)+ usermonth - 1)
 tempvar2 = cdfAll(0,:,:)
 tempvar2 = dim_avg_n_Wrap(cdfAll(index1:index2,:,:),0) - dim_avg_n_Wrap(cdfClm(usermonth-1+12-exmth:usermonth-1+12,:,:),0)
-tempDiff = W_ave(cdfAll,index1,index2,y1,y2,x1,x2) - W_ave(cdfAll,thetime-exmth,thetime,y1,y2,x1,x2) 
+tempDiff = W_ave(cdfAll,index1,index2,y1,y2,x1,x2) - W_ave(cdfAll,thetime-exmth,thetime,y1,y2,x1,x2)
 res@tiXAxisString = "Analog #1: " + varName+" Anomaly for "+ monthRangeString1 + " " + YearArray(sortInx(ii))+ ". ~C~" + monthRangeString1 + " " + YearArray(sortInx(ii)) + " (-) " + monthRangeString1 + " " + useryearString1+ " = " +  sprintf("%6.3f",tempDiff)+" "+varUnits+"."+"~C~RMS Match Score =" + sprintf("%6.3f",weightedArray1(wwww(ii)))+"~C~(c) University of Alaska Fairbanks"
-plot1 = gsn_csm_contour_map_polar(wks_pan,tempvar2,res) 
+plot1 = gsn_csm_contour_map_polar(wks_pan,tempvar2,res)
 poly1a = gsn_add_polyline(wks_pan,plot1,lon_box,lat_box,boxres)
 poly1b = gsn_add_polyline(wks_pan,plot1,AKlon_box,AKlat_box,AKboxres)
 plot6PanelA(1) = plot1
@@ -3762,9 +3816,9 @@ index1= tointeger(((YearArray(sortInx(ii+1))-1948)*12)+ usermonth - 1 - exmth)
 index2= tointeger(((YearArray(sortInx(ii+1))-1948)*12)+ usermonth - 1)
 tempvar2 = cdfAll(0,:,:)
 tempvar2 = dim_avg_n_Wrap(cdfAll(index1:index2,:,:),0) - dim_avg_n_Wrap(cdfClm(usermonth-1+12-exmth:usermonth-1+12,:,:),0)
-tempDiff = W_ave(cdfAll,index1,index2,y1,y2,x1,x2) - W_ave(cdfAll,thetime-exmth,thetime,y1,y2,x1,x2) 
+tempDiff = W_ave(cdfAll,index1,index2,y1,y2,x1,x2) - W_ave(cdfAll,thetime-exmth,thetime,y1,y2,x1,x2)
 res@tiXAxisString = "Analog #2: " + varName+" Anomaly for "+ monthRangeString1 + " " + YearArray(sortInx(ii+1))+ ". ~C~" + monthRangeString1 + " " + YearArray(sortInx(ii+1)) + " (-) " + monthRangeString1 + " " + useryearString1+ " = " +  sprintf("%6.3f",tempDiff)+" "+varUnits+"."+"~C~RMS Match Score =" + sprintf("%6.3f",weightedArray1(wwww(ii+1)))+"~C~(c) University of Alaska Fairbanks"
-plot2 = gsn_csm_contour_map_polar(wks_pan,tempvar2,res) 
+plot2 = gsn_csm_contour_map_polar(wks_pan,tempvar2,res)
 poly2a = gsn_add_polyline(wks_pan,plot2,lon_box,lat_box,boxres)
 poly2b = gsn_add_polyline(wks_pan,plot2,AKlon_box,AKlat_box,AKboxres)
 plot6PanelA(2) = plot2
@@ -3792,9 +3846,9 @@ index1= tointeger(((YearArray(sortInx(ii+2))-1948)*12)+ usermonth - 1 - exmth)
 index2= tointeger(((YearArray(sortInx(ii+2))-1948)*12)+ usermonth - 1)
 tempvar2 = cdfAll(0,:,:)
 tempvar2 = dim_avg_n_Wrap(cdfAll(index1:index2,:,:),0) - dim_avg_n_Wrap(cdfClm(usermonth-1+12-exmth:usermonth-1+12,:,:),0)
-tempDiff = W_ave(cdfAll,index1,index2,y1,y2,x1,x2) - W_ave(cdfAll,thetime-exmth,thetime,y1,y2,x1,x2) 
+tempDiff = W_ave(cdfAll,index1,index2,y1,y2,x1,x2) - W_ave(cdfAll,thetime-exmth,thetime,y1,y2,x1,x2)
 res@tiXAxisString = "Analog #3: " + varName+" Anomaly for "+ monthRangeString1 + " " + YearArray(sortInx(ii+2))+ ". ~C~" + monthRangeString1 + " " + YearArray(sortInx(ii+2)) + " (-) " + monthRangeString1 + " " + useryearString1+ " = " +  sprintf("%6.3f",tempDiff)+" "+varUnits+"."+"~C~RMS Match Score =" + sprintf("%6.3f",weightedArray1(wwww(ii+2)))+"~C~(c) University of Alaska Fairbanks"
-plot3 = gsn_csm_contour_map_polar(wks_pan,tempvar2,res) 
+plot3 = gsn_csm_contour_map_polar(wks_pan,tempvar2,res)
 poly3a = gsn_add_polyline(wks_pan,plot3,lon_box,lat_box,boxres)
 poly3b = gsn_add_polyline(wks_pan,plot3,AKlon_box,AKlat_box,AKboxres)
 plot6PanelA(3) = plot3
@@ -3818,9 +3872,9 @@ index1= tointeger(((YearArray(sortInx(ii+3))-1948)*12)+ usermonth - 1 - exmth)
 index2= tointeger(((YearArray(sortInx(ii+3))-1948)*12)+ usermonth - 1)
 tempvar2 = cdfAll(0,:,:)
 tempvar2 = dim_avg_n_Wrap(cdfAll(index1:index2,:,:),0) - dim_avg_n_Wrap(cdfClm(usermonth-1+12-exmth:usermonth-1+12,:,:),0)
-tempDiff = W_ave(cdfAll,index1,index2,y1,y2,x1,x2) - W_ave(cdfAll,thetime-exmth,thetime,y1,y2,x1,x2) 
+tempDiff = W_ave(cdfAll,index1,index2,y1,y2,x1,x2) - W_ave(cdfAll,thetime-exmth,thetime,y1,y2,x1,x2)
 res@tiXAxisString = "Analog #4: " + varName+" Anomaly for "+ monthRangeString1 + " " + YearArray(sortInx(ii+3))+ ". ~C~" + monthRangeString1 + " " + YearArray(sortInx(ii+3)) + " (-) " + monthRangeString1 + " " + useryearString1+ " = " +  sprintf("%6.3f",tempDiff)+" "+varUnits+"."+"~C~RMS Match Score =" + sprintf("%6.3f",weightedArray1(wwww(ii+3)))+"~C~(c) University of Alaska Fairbanks"
-plot4 = gsn_csm_contour_map_polar(wks_pan,tempvar2,res) 
+plot4 = gsn_csm_contour_map_polar(wks_pan,tempvar2,res)
 poly4a = gsn_add_polyline(wks_pan,plot4,lon_box,lat_box,boxres)
 poly4b = gsn_add_polyline(wks_pan,plot4,AKlon_box,AKlat_box,AKboxres)
 plot6PanelA(4) = plot4
@@ -3844,9 +3898,9 @@ index1= tointeger(((YearArray(sortInx(ii+4))-1948)*12)+ usermonth - 1 - exmth)
 index2= tointeger(((YearArray(sortInx(ii+4))-1948)*12)+ usermonth - 1)
 tempvar2 = cdfAll(0,:,:)
 tempvar2 = dim_avg_n_Wrap(cdfAll(index1:index2,:,:),0) - dim_avg_n_Wrap(cdfClm(usermonth-1+12-exmth:usermonth-1+12,:,:),0)
-tempDiff = W_ave(cdfAll,index1,index2,y1,y2,x1,x2) - W_ave(cdfAll,thetime-exmth,thetime,y1,y2,x1,x2) 
+tempDiff = W_ave(cdfAll,index1,index2,y1,y2,x1,x2) - W_ave(cdfAll,thetime-exmth,thetime,y1,y2,x1,x2)
 res@tiXAxisString = "Analog #5: " + varName+" Anomaly for "+ monthRangeString1 + " " + YearArray(sortInx(ii+4))+ ". ~C~" + monthRangeString1 + " " + YearArray(sortInx(ii+4)) + " (-) " + monthRangeString1 + " " + useryearString1+ " = " +  sprintf("%6.3f",tempDiff)+" "+varUnits+"."+"~C~RMS Match Score =" + sprintf("%6.3f",weightedArray1(wwww(ii+4)))+"~C~(c) University of Alaska Fairbanks"
-plot5 = gsn_csm_contour_map_polar(wks_pan,tempvar2,res) 
+plot5 = gsn_csm_contour_map_polar(wks_pan,tempvar2,res)
 poly5a = gsn_add_polyline(wks_pan,plot5,lon_box,lat_box,boxres)
 poly5b = gsn_add_polyline(wks_pan,plot5,AKlon_box,AKlat_box,AKboxres)
 plot6PanelA(5) = plot5
@@ -3889,35 +3943,35 @@ delete(wks_pan)
   zz = systemfunc("mv -f "+filedir+"pan_b.png /var/www/html/maps/pan_b.png")
   zz = systemfunc("convert /var/www/html/maps/pan_b.png -crop 800x1000+50+0 /var/www/html/maps/b.png")
   zz = systemfunc("rm -f /var/www/html/maps/pan_b.png")
-  
+
   zz = systemfunc("mv -f "+filedir+"pan_a1.png /var/www/html/maps/pan_a1.png")
   zz = systemfunc("convert /var/www/html/maps/pan_a1.png -crop 800x1000+50+0 /var/www/html/maps/a1.png")
   zz = systemfunc("rm -f /var/www/html/maps/pan_a1.png")
   zz = systemfunc("mv -f "+filedir+"pan_b1.png /var/www/html/maps/pan_b1.png")
   zz = systemfunc("convert /var/www/html/maps/pan_b1.png -crop 800x1000+50+0 /var/www/html/maps/b1.png")
   zz = systemfunc("rm -f /var/www/html/maps/pan_b1.png")
-  
+
   zz = systemfunc("mv -f "+filedir+"pan_a2.png /var/www/html/maps/pan_a2.png")
   zz = systemfunc("convert /var/www/html/maps/pan_a2.png -crop 800x1000+50+0 /var/www/html/maps/a2.png")
   zz = systemfunc("rm -f /var/www/html/maps/pan_a2.png")
   zz = systemfunc("mv -f "+filedir+"pan_b2.png /var/www/html/maps/pan_b2.png")
   zz = systemfunc("convert /var/www/html/maps/pan_b2.png -crop 800x1000+50+0 /var/www/html/maps/b2.png")
   zz = systemfunc("rm -f /var/www/html/maps/pan_b2.png")
-  
+
   zz = systemfunc("mv -f "+filedir+"pan_a3.png /var/www/html/maps/pan_a3.png")
   zz = systemfunc("convert /var/www/html/maps/pan_a3.png -crop 800x1000+50+0 /var/www/html/maps/a3.png")
   zz = systemfunc("rm -f /var/www/html/maps/pan_a3.png")
   zz = systemfunc("mv -f "+filedir+"pan_b3.png /var/www/html/maps/pan_b3.png")
   zz = systemfunc("convert /var/www/html/maps/pan_b3.png -crop 800x1000+50+0 /var/www/html/maps/b3.png")
   zz = systemfunc("rm -f /var/www/html/maps/pan_b3.png")
-  
+
   zz = systemfunc("mv -f "+filedir+"pan_a4.png /var/www/html/maps/pan_a4.png")
   zz = systemfunc("convert /var/www/html/maps/pan_a4.png -crop 800x1000+50+0 /var/www/html/maps/a4.png")
   zz = systemfunc("rm -f /var/www/html/maps/pan_a4.png")
   zz = systemfunc("mv -f "+filedir+"pan_b4.png /var/www/html/maps/pan_b4.png")
   zz = systemfunc("convert /var/www/html/maps/pan_b4.png -crop 800x1000+50+0 /var/www/html/maps/b4.png")
   zz = systemfunc("rm -f /var/www/html/maps/pan_b4.png")
-  
+
   zz = systemfunc("mv -f "+filedir+"pan_a5.png /var/www/html/maps/pan_a5.png")
   zz = systemfunc("convert /var/www/html/maps/pan_a5.png -crop 800x1000+50+0 /var/www/html/maps/a5.png")
   zz = systemfunc("rm -f /var/www/html/maps/pan_a5.png")
@@ -4062,7 +4116,7 @@ b=thetime+fmnths+fmnths2-1
 ;print("b="+b+"  thetime="+thetime+"   totalDims="+totalDims)
 ;print("")
 
-if (b.lt.totalDims) then  
+if (b.lt.totalDims) then
 
   if (variable .eq. 1) then
     sel_verify =  dim_avg_n_Wrap(slp(thetime+fmnths:thetime+fmnths+fmnths2-1,:,:),0)
@@ -4240,11 +4294,11 @@ if (b.lt.totalDims) then
   plotV = new(2,graphic)
   tempvar2 = cdfAll(0,:,:)
   tempvar2 = dim_avg_n_Wrap(top5(0:4,:,:),0) - dim_avg_n_Wrap(cdfClm(usermonth+12-1+fmnths:usermonth+12-1+fmnths+fmnths2-1,:,:),0)
-  AKdiff = W_ave(top5anom,0,4,AK1,AK2,AK3,AK4)  
-  AKdiff2 = W_ave(top5anom,0,4,y1,y2,x1,x2)  
-  ;res@tiXAxisString = varName + " Anomaly forecast during " + monthRangeString2 +" time period.~C~Using top 5 analogs for " + monthRangeString1 + " " + useryear + ".~C~Years are : "+YearArray(sortInx(ii))+", "+YearArray(sortInx(ii+1))+", "+YearArray(sortInx(ii+2))+", "+YearArray(sortInx(ii+3))+", and "+YearArray(sortInx(ii+4))+"~C~Red Box Average Anomaly is "+ sprintf("%6.3f",AKdiff)+" "+varUnits+".~C~Blue Box Average Anomaly is "+ sprintf("%6.3f",AKdiff2)+" "+varUnits+".~C~"+rankString 
-  res@tiXAxisString = varName + " Anomaly forecast during " + monthRangeString2 +" time period.~C~Using top 5 analogs for " + monthRangeString1 + " " + useryear + ".~C~Years are : "+YearArray(sortInx(ii))+", "+YearArray(sortInx(ii+1))+", "+YearArray(sortInx(ii+2))+", "+YearArray(sortInx(ii+3))+", and "+YearArray(sortInx(ii+4))+"~C~"+weightString2+"~C~"+rankString 
-  plotV1 = gsn_csm_contour_map_polar(wks_pan,tempvar2,res) 
+  AKdiff = W_ave(top5anom,0,4,AK1,AK2,AK3,AK4)
+  AKdiff2 = W_ave(top5anom,0,4,y1,y2,x1,x2)
+  ;res@tiXAxisString = varName + " Anomaly forecast during " + monthRangeString2 +" time period.~C~Using top 5 analogs for " + monthRangeString1 + " " + useryear + ".~C~Years are : "+YearArray(sortInx(ii))+", "+YearArray(sortInx(ii+1))+", "+YearArray(sortInx(ii+2))+", "+YearArray(sortInx(ii+3))+", and "+YearArray(sortInx(ii+4))+"~C~Red Box Average Anomaly is "+ sprintf("%6.3f",AKdiff)+" "+varUnits+".~C~Blue Box Average Anomaly is "+ sprintf("%6.3f",AKdiff2)+" "+varUnits+".~C~"+rankString
+  res@tiXAxisString = varName + " Anomaly forecast during " + monthRangeString2 +" time period.~C~Using top 5 analogs for " + monthRangeString1 + " " + useryear + ".~C~Years are : "+YearArray(sortInx(ii))+", "+YearArray(sortInx(ii+1))+", "+YearArray(sortInx(ii+2))+", "+YearArray(sortInx(ii+3))+", and "+YearArray(sortInx(ii+4))+"~C~"+weightString2+"~C~"+rankString
+  plotV1 = gsn_csm_contour_map_polar(wks_pan,tempvar2,res)
   polyV1a = gsn_add_polyline(wks_pan,plotV1,lon_box,lat_box,boxres)
   polyV1b = gsn_add_polyline(wks_pan,plotV1,AKlon_box,AKlat_box,AKboxres)
   draw(plotV1)
@@ -4258,7 +4312,7 @@ if (b.lt.totalDims) then
   res@tiXAxisString = "Actual "+varName+ " Anomaly for "+ monthRangeString2 +" "+useryearString2 + "~C~Red Box Anomaly is "+ sprintf("%6.3f",AKdiff)+" "+varUnits+"." + "~C~Blue Box Anomaly is "+ sprintf("%6.3f",AKdiff2)+" "+varUnits+"."+"~C~(c) University of Alaska Fairbanks"
   tempvar2 = cdfAll(0,:,:)
   tempvar2 = verify - dim_avg_n_Wrap(cdfClm(usermonth+12-1+fmnths:usermonth+12-1+fmnths+fmnths2-1,:,:),0)
-  plotV2 = gsn_csm_contour_map_polar(wks_pan,tempvar2,res) 
+  plotV2 = gsn_csm_contour_map_polar(wks_pan,tempvar2,res)
   polyV2a = gsn_add_polyline(wks_pan,plotV2,lon_box,lat_box,boxres)
   polyV2b = gsn_add_polyline(wks_pan,plotV2,AKlon_box,AKlat_box,AKboxres)
   plotV(0) = plotV1
@@ -4311,7 +4365,7 @@ if (b.lt.totalDims) then
         ;  print("ID,Match Year,Match Month,Months Used for Match,Forecast Months Ahead,Analongs RMSE,NMME RMSE,CFSv2 RMSE, Winner1, Winner2")
         ;end if
         ;print(ID+","+useryear+","+usermonth+","+exmth+","+fmnths+","+analog_actual_RMS +","+NMME_actual_RMS +","+CFSv2_actual_RMS+","+winner+","+winner2     )
-        
+
 
         wks_pan = gsn_open_wks(wtype,"pan_v3")
         AKdiff = W_ave(cdfAll,thetime+fmnths,thetime+fmnths+fmnths2-1,AK1,AK2,AK3,AK4) - W_ave(cdfClm,usermonth-1+12+fmnths,usermonth-1+12+fmnths+fmnths2-1,AK1,AK2,AK3,AK4)
@@ -4320,7 +4374,7 @@ if (b.lt.totalDims) then
         tempvar2 = cdfAll(0,:,:)
         tempvar2 = verify - dim_avg_n_Wrap(cdfClm(usermonth+12-1+fmnths:usermonth+12-1+fmnths+fmnths2-1,:,:),0)
         nmmeave = dim_avg_n_Wrap(nmme(lead:lead+fmnths2,:,:),0)
-        plotV2 = gsn_csm_contour_map_polar(wks_pan,nmmeave(:,:),res) 
+        plotV2 = gsn_csm_contour_map_polar(wks_pan,nmmeave(:,:),res)
         polyV2a = gsn_add_polyline(wks_pan,plotV2,lon_box,lat_box,boxres)
         polyV2b = gsn_add_polyline(wks_pan,plotV2,AKlon_box,AKlat_box,AKboxres)
         plotV(0) = plotV1
@@ -4346,7 +4400,7 @@ end if ; end verification plot section
 
 ;; XY Scatter plot showing all years of the selection month(s)
 
-f = new((/9,dimsizes(sctArr)/),float)  
+f = new((/9,dimsizes(sctArr)/),float)
 
 do qq=0,dimsizes(sctArr) - 1  ; loop through and populate top 5 analog month groups into template arrays
   f(0,qq) = sctArr(qq)
@@ -4354,7 +4408,7 @@ do qq=0,dimsizes(sctArr) - 1  ; loop through and populate top 5 analog month gro
 end do
 
 
-do ww=0,numAnalogsToUse - 1   ; might crash here! 
+do ww=0,numAnalogsToUse - 1   ; might crash here!
   f(2,ww) = sctArr(sortInx(ii+ww))
   f(3,ww) = YearArray(sortInx(ii+ww))
 end do
@@ -4367,13 +4421,13 @@ res44 = SetScatterRes("Nothing")
 res44@tiXAxisString ="Analogs = " + YearArray(sortInx(ii)) +", " + YearArray(sortInx(ii+1)) +", " + YearArray(sortInx(ii+2)) +", " + YearArray(sortInx(ii+3)) +", " + YearArray(sortInx(ii+4))
 res44@tiYAxisString ="Ave. "+varName+" from lat: "+y1+"-"+y2+" lon:"+x1+"-"+x2
 res44@tiMainString = monthRangeString1+" "+useryear+" "+varName+ "~C~"+weightString
-res44@xyMarkerColors = "forestgreen"     
+res44@xyMarkerColors = "forestgreen"
 res44@xyMarkerSizeF     = 0.01                     ; Marker size (default 0.01)
 plotr  = gsn_csm_xy (wks_pan,f(1,:),f(0,:),res44)                  ; create plot
-res44@xyMarkerColors = "firebrick"    
+res44@xyMarkerColors = "firebrick"
 res44@xyMarkerSizeF     = 0.02                     ; Marker size (default 0.01)
 plotr2  = gsn_csm_xy (wks_pan,f(3,:),f(2,:),res44)                  ; create plot
-res44@xyMarkerColors = "orange"    
+res44@xyMarkerColors = "orange"
 res44@xyMarkerSizeF     = 0.03                     ; Marker size (default 0.01)
 plotr3  = gsn_csm_xy (wks_pan,f(5,:),f(4,:),res44)                  ; create plot
 
@@ -4391,13 +4445,13 @@ frame(wks_pan)
 ;print(sortInx+"")
 
 ;; XY Scatter plot showing how the best 5 analog years fared (plus verification year)
-g = new((/9,RMS_Array_Size/),float)  
+g = new((/9,RMS_Array_Size/),float)
 do qq=0,RMS_Array_Size - 1  ; loop through and populate top 5 analog month groups into template arrays
   g(0,qq) = AksctArr(qq)
   g(1,qq) = qq+1948
 end do
 
-do ww=0,numAnalogsToUse - 1   ; might crash here! 
+do ww=0,numAnalogsToUse - 1   ; might crash here!
   ;print("ww= "+ww+"  ii= "+ii+"   AksctArr(sortInx(ii+ww)-1)= "+AksctArr(sortInx(ii+ww)-1))
   g(2,ww) = AksctArr(sortInx(ii+ww)-1)
   g(3,ww) = YearArray(sortInx(ii+ww))
@@ -4415,16 +4469,16 @@ res55 = SetScatterRes("Nothing")
 res55@tiXAxisString ="Analogs = " + YearArray(sortInx(ii)) +", " + YearArray(sortInx(ii+1)) +", " + YearArray(sortInx(ii+2)) +", " + YearArray(sortInx(ii+3)) +", " + YearArray(sortInx(ii+4))
 res55@tiYAxisString ="Ave. "+varName+ " from lat: "+AK1+"-"+AK2+" lon:"+AK3+"-"+AK4
 res55@tiMainString = monthRangeString2+" "+useryearString2+" "+varName+ "~C~"+weightString
-res55@xyMarkerColors = "forestgreen"     
+res55@xyMarkerColors = "forestgreen"
 res55@xyMarkerSizeF     = 0.01                     ; Marker size (default 0.01)
 plotr  = gsn_csm_xy (wks_pan,g(1,:),g(0,:),res55)                  ; create plot
-res55@xyMarkerColors = "firebrick"    
+res55@xyMarkerColors = "firebrick"
 res55@xyMarkerSizeF     = 0.02                     ; Marker size (default 0.01)
 plotr2  = gsn_csm_xy (wks_pan,g(3,:),g(2,:),res55)                  ; create plot
 overlay(plotr,plotr2)
 
 if (doLast .eq. True) then
-  res55@xyMarkerColors = "blue"    
+  res55@xyMarkerColors = "blue"
   res55@xyMarkerSizeF     = 0.03                     ; Marker size (default 0.01)
   plotr3  = gsn_csm_xy (wks_pan,g(5,:),g(4,:),res55)                  ; create plot
   overlay(plotr,plotr3)
@@ -4438,7 +4492,7 @@ frame(wks_pan)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; ends second scatter plot section
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 
@@ -4486,7 +4540,7 @@ do si = 0, 29
     iCntr = iCntr + 1
   end if
   if(domanual.eq.True) then     ; This checks to see if the years were entered manually.
-    if(manualyesno.eq.1) then   
+    if(manualyesno.eq.1) then
       if(si.eq.4) then
         si=30
       end if
@@ -4578,7 +4632,7 @@ theSeaIceMonthCalcsM2 = SeaIceCalcs(orderedNum,seaIceMonthM2,yrStrtIceClm,yrLast
   validCount = 0
   ;do lk = 0, numAnalogsToUse - 1
   do lk = 0, 4
-    myInd = (the5AnalogYears(lk)-1948)*12+usermonth-1+fmnths  
+    myInd = (the5AnalogYears(lk)-1948)*12+usermonth-1+fmnths
     if (myInd.le.totalDimsM1) then     ; change to 818 in Mar 2016 (makes sure that you dont have a sea ice in the usermonth but not in the last forecast month; e.g., data for Dec 2015 but forecast for Sept 2016).
       validCount = validCount +1
       theEstimates(lk) = theSeaIceMonthCalcsM0(4,the5AnalogYears(lk)-1948)
@@ -4717,8 +4771,8 @@ theSeaIceMonthCalcsM2 = SeaIceCalcs(orderedNum,seaIceMonthM2,yrStrtIceClm,yrLast
   end if
 
 
-  if (fg.gt.12) then                                        
-    if (useryear.lt.2019) then                                          ; change me in 2017                              
+  if (fg.gt.12) then
+    if (useryear.lt.2019) then                                          ; change me in 2017
       targetSeaIce = theSeaIceMonthCalcsM0(1,useryear-1948+1)
       targetSeaIceM1 = theSeaIceMonthCalcsM1(1,useryear-1948+1)
       targetSeaIceM2 = theSeaIceMonthCalcsM2(1,useryear-1948+1)
@@ -4845,18 +4899,18 @@ SeaIceForecastM2 = targetSeaIceTrendM2 + aveDeviationM2
 ;***************************
 ;***  SPECIAL Calcs and Plot
 ;***************************
-s1 = new(dimsizes(weightedArray1),float)  
-s1b = new(dimsizes(weightedArray1),float)  
-s2 = new(dimsizes(specialArray1),float)  
-r1 = new(dimsizes(weightedArray1),float)  
-r1b = new(dimsizes(weightedArray1),float)  
+s1 = new(dimsizes(weightedArray1),float)
+s1b = new(dimsizes(weightedArray1),float)
+s2 = new(dimsizes(specialArray1),float)
+r1 = new(dimsizes(weightedArray1),float)
+r1b = new(dimsizes(weightedArray1),float)
 
 matchesString = ""
 specialString = ""
 
 matchesString = "Atmospheric Match Scores Based on the Following User Input Weighting Are:"+cr+"Weights: "+"SLP:"+sprintf("%6.2f",slpwgt)+", Z"+getlev(heightlev)+":"+sprintf("%6.2f",h500wgt)+", T2M:"+sprintf("%6.2f",t2mwgt)+", T"+getlev(templev)+":"+sprintf("%6.2f",t925wgt)+", and SST:"+sprintf("%6.2f",sstwgt)+"."+cr+cr
 specialString = "Atmospheric Match Scores Based on the Following User Input Weighting Are:"+cr+"Weights: "+"SLP:"+sprintf("%6.2f",slpwgt)+", Z"+getlev(heightlev)+":"+sprintf("%6.2f",h500wgt)+", T2M:"+sprintf("%6.2f",t2mwgt)+", T"+getlev(templev)+":"+sprintf("%6.2f",t925wgt)+", and SST:"+sprintf("%6.2f",sstwgt)+"."+cr+"[#Rank,RMSE,"+specialText+"]"+cr+cr
-   
+
 
 do ear = 0, NumAnalysisYears-1
   earplus1 = ear + 1
@@ -4896,7 +4950,7 @@ if (b.lt.totalDims) then    ; only do this part if you can do the verification p
 
   do ear2 = 0, dimsizes(AKverifyRMS)-2  ; it's -2 because the 1948 year has a placeholder value
     ear2plus1 = ear2 + 1
-    ;print("ear2 = "+ear2)   
+    ;print("ear2 = "+ear2)
     matchesString2 = matchesString2 + "Selection Match #"+ear2plus1+" ("+YearArray(xxyy(ii+ear2))+ ") was the #"+VerificationRanks2(AKverifyRMS,YearArray(xxyy(ii+ear2)))+" best hindcast match."+cr
   end do
 end if
@@ -5010,14 +5064,14 @@ end if
 
 
 SeaIceDeparts = new(NumAnalysisYears,float)
-do qq=0,NumAnalysisYears-1  
+do qq=0,NumAnalysisYears-1
   SeaIceDeparts(qq) = theSeaIceMonthCalcsM0(1,qq+1)
 end do
 betaSeaIcecor2 = regline_stats(SeaIceDeparts,ydep)
 betaSeaIceR2 = betaSeaIcecor2@r
 
 
-do qq=0,NumAnalysisYears-1  
+do qq=0,NumAnalysisYears-1
   SeaIceDeparts(qq) = theSeaIceMonthCalcsM0(5,qq+1)
 end do
 
@@ -5133,7 +5187,7 @@ zz = systemfunc("mv -f "+filedir+"correlations.txt /var/www/html/maps/correlatio
   myRes@tmXBLabelsOn = False
 
   myRes@gsnMaximize = True
-  
+
   myPlot = gsn_csm_xy(wks_pan,x,lineData,myRes)
 
 
@@ -5203,7 +5257,7 @@ zz = systemfunc("mv -f "+filedir+"correlations.txt /var/www/html/maps/correlatio
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; This ends the (lengthy) section where
-; sea ice extent is estimated for the 
+; sea ice extent is estimated for the
 ; forecast year (only single month) based
 ; on the average deviation from the trend
 ; line of the analog years (since 1979)
@@ -5255,7 +5309,7 @@ if (doSpecial.eq.True) then
   ;rrrnewlat2  = latGlobeF(91, "lat", "latitude", "degrees_north")
   ;rrrnewlat  = rrrnewlat2(1:89)
   ;rrrnewlon  = lonGlobeF(180, "lon", "longitude", "degrees_east")
- 
+
   rrr1 = escorc(specialAnalysis1,mySLPCorArray(lat|:,lon|:,time|:))
   rrr2 = escorc(specialAnalysis1,myH500CorArray(lat|:,lon|:,time|:))
   rrr3 = escorc(specialAnalysis1,myT2MCorArray(lat|:,lon|:,time|:))
@@ -5302,7 +5356,7 @@ if (doSpecial.eq.True) then
   rrr6&lon=rrrnewlon
   rrr6&lat@units=slp&lat@units
   rrr6&lon@units=slp&lon@units
-  
+
 
 
   wks_pan = gsn_open_wks(wtypez,"cor_slp_11_a")
@@ -5314,7 +5368,7 @@ if (doSpecial.eq.True) then
   if (detrend.eq.0) then
     res@tiXAxisString = "Correlation Significance for "+monthRangeString1+" SLP~C~And "+specialText+" ~C~This is a monthly average "
   end if
-  plot90 = gsn_csm_contour_map_polar(wks_pan,rrr1,res) 
+  plot90 = gsn_csm_contour_map_polar(wks_pan,rrr1,res)
   poly90a = gsn_add_polyline(wks_pan,plot90,lon_box,lat_box,AKboxgreen)
   draw(plot90)
   frame(wks_pan)
@@ -5332,8 +5386,8 @@ if (doSpecial.eq.True) then
   res@tiXAxisString = "Correlation Significance for "+monthRangeString1+" Z"+getlev(heightlev)+" ~C~And "+specialText+" ~C~This is a monthly average "
   if (detrend.eq.0) then
     res@tiXAxisString = "Correlation Significance for "+monthRangeString1+" Z"+getlev(heightlev)+" ~C~And "+specialText+" ~C~This is a monthly average "
-  end if 
-  plot90 = gsn_csm_contour_map_polar(wks_pan,rrr2,res) 
+  end if
+  plot90 = gsn_csm_contour_map_polar(wks_pan,rrr2,res)
   poly90a = gsn_add_polyline(wks_pan,plot90,lon_box,lat_box,AKboxgreen)
   draw(plot90)
   frame(wks_pan)
@@ -5350,8 +5404,8 @@ if (doSpecial.eq.True) then
   res@tiXAxisString = "Correlation Significance for "+monthRangeString1+" T2M ~C~And "+specialText+" ~C~This is a monthly average "
   if (detrend.eq.0) then
     res@tiXAxisString = "Correlation Significance for "+monthRangeString1+" T2M ~C~And "+specialText+" ~C~This is a monthly average "
-  end if 
-  plot90 = gsn_csm_contour_map_polar(wks_pan,rrr3,res) 
+  end if
+  plot90 = gsn_csm_contour_map_polar(wks_pan,rrr3,res)
   poly90a = gsn_add_polyline(wks_pan,plot90,lon_box,lat_box,AKboxgreen)
   draw(plot90)
   frame(wks_pan)
@@ -5368,8 +5422,8 @@ if (doSpecial.eq.True) then
   res@tiXAxisString = "Correlation Significance for "+monthRangeString1+templevelORrh+" ~C~And "+specialText+" ~C~This is a monthly average "
   if (detrend.eq.0) then
     res@tiXAxisString = "Correlation Significance for "+monthRangeString1+templevelORrh+" ~C~And "+specialText+" ~C~This is a monthly average "
-  end if 
-  plot90 = gsn_csm_contour_map_polar(wks_pan,rrr4,res) 
+  end if
+  plot90 = gsn_csm_contour_map_polar(wks_pan,rrr4,res)
   poly90a = gsn_add_polyline(wks_pan,plot90,lon_box,lat_box,AKboxgreen)
   draw(plot90)
   frame(wks_pan)
@@ -5387,8 +5441,8 @@ if (doSpecial.eq.True) then
   res@tiXAxisString = "Correlation Significance for "+monthRangeString1+" SST ~C~And "+specialText+" ~C~This is a monthly average "
   if (detrend.eq.0) then
     res@tiXAxisString = "Correlation Significance for "+monthRangeString1+" SST ~C~And "+specialText+" ~C~This is a monthly average "
-  end if 
-  plot90 = gsn_csm_contour_map_polar(wks_pan,rrr5,res) 
+  end if
+  plot90 = gsn_csm_contour_map_polar(wks_pan,rrr5,res)
   poly90a = gsn_add_polyline(wks_pan,plot90,lon_box,lat_box,AKboxgreen)
   draw(plot90)
   frame(wks_pan)
@@ -5409,7 +5463,7 @@ if (doSpecial.eq.True) then
     do r=0, abslats -1
       do s=0, abslons -1
         if(.not.ismissing(rrr5(r,s))) then
-          abssum(r,s) = abs(rrr1(r,s))+abs(rrr2(r,s))+abs(rrr3(r,s))+abs(rrr4(r,s))+abs(rrr5(r,s))  
+          abssum(r,s) = abs(rrr1(r,s))+abs(rrr2(r,s))+abs(rrr3(r,s))+abs(rrr4(r,s))+abs(rrr5(r,s))
         end if
         if(ismissing(rrr5(r,s))) then
           abssum(r,s) = (abs(rrr1(r,s))+abs(rrr2(r,s))+abs(rrr3(r,s))+abs(rrr4(r,s))) * 1.25
@@ -5424,8 +5478,8 @@ if (doSpecial.eq.True) then
   res@tiXAxisString = "Summed Correlation Significance for "+monthRangeString1+" ~C~And "+specialText+" ~C~This is a monthly average "
   if (detrend.eq.0) then
     res@tiXAxisString = "Summed Correlation Significance for "+monthRangeString1+" ~C~And "+specialText+" ~C~This is a monthly average "
-  end if 
-  plot90 = gsn_csm_contour_map_polar(wks_pan,abssum,res) 
+  end if
+  plot90 = gsn_csm_contour_map_polar(wks_pan,abssum,res)
   draw(plot90)
   frame(wks_pan)
   delete([/wks_pan,res/])
@@ -5478,8 +5532,8 @@ if (doSpecial.eq.True) then
   res@tiXAxisString = "Max Correlation Significance for "+monthRangeString1+" ~C~And "+specialText+" ~C~This is a monthly average "
   if (detrend.eq.0) then
     res@tiXAxisString = "Max Correlation Significance for "+monthRangeString1+" ~C~And "+specialText+" ~C~This is a monthly average "
-  end if 
-  plot90 = gsn_csm_contour_map_polar(wks_pan,absmax,res) 
+  end if
+  plot90 = gsn_csm_contour_map_polar(wks_pan,absmax,res)
   draw(plot90)
   frame(wks_pan)
   delete([/wks_pan,res/])
@@ -5520,10 +5574,10 @@ if (doSpecial.eq.True) then
   res@lbLabelPosition  = "Center"             ; label position
   res@lbLabelAlignment = "BoxCenters"         ; label orientation
   res@lbTitleDirection = "Across"
-  cmap2 = (/"(/0.90, 0.90, 0.90/)","(/0.99, 0.40, 0.40/)","(/0.40, 0.40, 0.99/)","(/0.40, 0.99, 0.40/)","(/0.99, 0.40, 0.99/)"/)   
+  cmap2 = (/"(/0.90, 0.90, 0.90/)","(/0.99, 0.40, 0.40/)","(/0.40, 0.40, 0.99/)","(/0.40, 0.99, 0.40/)","(/0.99, 0.40, 0.99/)"/)
   res@cnFillPalette = cmap2
   res@lbAutoManage = False
-  res@cnLevelSelectionMode = "ExplicitLevels"   
+  res@cnLevelSelectionMode = "ExplicitLevels"
 
   setvalues wks_pan
     "wkBackgroundColor":"white"
@@ -5532,8 +5586,8 @@ if (doSpecial.eq.True) then
   res@tiXAxisString = "Max Correlation Variable for "+monthRangeString1+" ~C~And "+specialText+" ~C~This is a monthly average "
   if (detrend.eq.0) then
     res@tiXAxisString = "Max Correlation Variable for "+monthRangeString1+" ~C~And "+specialText+" ~C~This is a monthly average "
-  end if 
-  plot90 = gsn_csm_contour_map_polar(wks_pan,absmax2,res) 
+  end if
+  plot90 = gsn_csm_contour_map_polar(wks_pan,absmax2,res)
   draw(plot90)
   frame(wks_pan)
   delete([/wks_pan,res/])
@@ -5561,14 +5615,14 @@ res55 = SetScatterRes("Nothing")
 res55@tiYAxisString =specialText
 res55@tiXAxisString ="RMSE from Climo: lat "+y1+"-"+y2+" lon"+x1+"-"+x2+"~C~            Pearson's R = "+sprintf("%5.3f", specialCor)
 res55@tiMainString = monthRangeString1+" vs "+specialText+ "~C~"+weightString
-res55@xyMarkerColors = "forestgreen"     
+res55@xyMarkerColors = "forestgreen"
 res55@xyMarkerSizeF     = 0.01                     ; Marker size (default 0.01)
 res55@xyMarkLineModes     = (/"Markers","Lines"/)  ; choose which have markers
 res55@xyLineThicknesses   = (/1,2/)                ; set second line to 2
-res55@xyMarkers           = 16                     ; choose type of marker 
+res55@xyMarkers           = 16                     ; choose type of marker
 res55@xyMarkerColor       = "red"                  ; Marker color
 res55@xyMarkerSizeF       = 0.005                  ; Marker size (default 0.01)
-res55@xyDashPatterns      = 1                      ; solid line 
+res55@xyDashPatterns      = 1                      ; solid line
 
 data7      = new ( (/2,dimsizes(s1)/), float)
 data7(0,:) = s2
@@ -5590,14 +5644,14 @@ res55 = SetScatterRes("Nothing")
 res55@tiYAxisString =specialText
 res55@tiXAxisString ="RMSE from Selected Year: lat "+y1+"-"+y2+" lon"+x1+"-"+x2
 res55@tiMainString = monthRangeString1+" "+useryearString1+" vs "+specialText+ "~C~"+weightString
-res55@xyMarkerColors = "forestgreen"     
+res55@xyMarkerColors = "forestgreen"
 res55@xyMarkerSizeF     = 0.01                     ; Marker size (default 0.01)
 res55@xyMarkLineModes     = (/"Markers","Lines"/)  ; choose which have markers
 res55@xyLineThicknesses   = (/1,2/)                ; set second line to 2
-res55@xyMarkers           = 16                     ; choose type of marker 
+res55@xyMarkers           = 16                     ; choose type of marker
 res55@xyMarkerColor       = "red"                  ; Marker color
 res55@xyMarkerSizeF       = 0.005                  ; Marker size (default 0.01)
-res55@xyDashPatterns      = 1                      ; solid line 
+res55@xyDashPatterns      = 1                      ; solid line
 
 data7b      = new ( (/2,dimsizes(s1b)/), float)
 data7b(0,:) = s2
@@ -5830,11 +5884,11 @@ end if
   delete(t925ArrayforRMS)
   delete(sstArrayforRMS)
   delete(YearArrayforRMS)
-  delete(AKslpArray) 
-  delete(AKh500Array) 
-  delete(AKt2mArray) 
-  delete(AKt925Array) 
-  delete(AKsstArray) 
+  delete(AKslpArray)
+  delete(AKh500Array)
+  delete(AKt2mArray)
+  delete(AKt925Array)
+  delete(AKsstArray)
   delete(AKboxslpArray3)
   delete(AKboxh500Array3)
   delete(AKboxt2mArray3)
@@ -5894,7 +5948,7 @@ end if
   delete(slp)
   delete(h500)
   delete(t2m)
-  delete(t925)  
+  delete(t925)
   delete(icec)
   delete(sst)
   delete(domanual)
