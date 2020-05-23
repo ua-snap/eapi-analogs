@@ -14,7 +14,7 @@ begin
 ; - scratch working directory
 ; - output directory
 ;   * Almost all instances of hardcoded /var/www/html
-;   * are pointing to /var/www/html/maps which is probably
+;   * ware pointing to /var/www/html/maps/ which is probably
 ;   * the same as the output directory.  (300 out of 303 refs).
 
 ; This is defined in the documentation currently as
@@ -34,7 +34,7 @@ data_dir = ncargpath("data")
 ; for file inputs.
 
 ; Define the output directory (see comments above
-; re: /var/www/html/maps
+; re: /var/www/html/maps/
 ; this should be unique for each run.
 output_dir = getenv("NCL_OUTPUT_DIR")
 
@@ -109,7 +109,7 @@ if(webinput.eq.False) then
 
   ; TODO documenting before removing this,
   ; need to sort out what filedir is doing.
-  ; Note dependency on /var/www/html/maps.
+  ; Note dependency on "+output_dir+".
   filedir = str_concat((/getenv("HOME"), "/"/))
   txtareayesno = 2
 
@@ -117,7 +117,7 @@ if(webinput.eq.False) then
   ; when the app is launched from the web (= command line options)
   txtarea = "1948,134"+cr+"1949,134"+cr+"1950,126"+cr+"1951,120"+cr+"1952,133"+cr+"1953,119"+cr+"1954,126"+cr+"1955,129"+cr+"1956,122"+cr+"1957,125"+cr+"1958,119"+cr+"1959,128"+cr+"1960,123"+cr+"1961,125"+cr+"1962,132"+cr+"1963,125"+cr+"1964,141"+cr+"1965,127"+cr+"1966,128"+cr+"1967,124"+cr+"1968,129"+cr+"1969,118"+cr+"1970,124"+cr+"1971,128"+cr+"1972,131"+cr+"1973,124"+cr+"1974,126"+cr+"1975,130"+cr+"1976,123"+cr+"1977,126"+cr+"1978,120"+cr+"1979,120"+cr+"1980,120"+cr+"1981,120"+cr+"1982,130"+cr+"1983,119"+cr+"1984,130"+cr+"1985,131"+cr+"1986,128"+cr+"1987,125"+cr+"1988,118"+cr+"1989,121"+cr+"1990,114"+cr+"1991,121"+cr+"1992,135"+cr+"1993,113"+cr+"1994,119"+cr+"1995,116"+cr+"1996,126"+cr+"1997,120"+cr+"1998,110"+cr+"1999,119"+cr+"2000,122"+cr+"2001,128"+cr+"2002,127"+cr+"2003,119"+cr+"2004,115"+cr+"2005,118"+cr+"2006,122"+cr+"2007,117"+cr+"2008,127"+cr+"2009,121"+cr+"2010,119"+cr+"2011,124"+cr+"2012,114"+cr+"2013,140"+cr+"2014,115"+cr+"2015,114"+cr+"2016,114"+cr+"2017,121"+cr+"2018,"+cr+"2019,"+cr+"2020,"+cr+"2021,"+cr+"2022,"+cr+"2023,"+cr+"2024,"+cr+"2025,"+cr+"2026,"+cr+"2027,"
   asciiwrite ("special_ascii.txt" , txtarea)
-  zz = systemfunc("mv -f "+filedir+"special_ascii.txt /var/www/html/maps/special_ascii.txt")
+  zz = systemfunc("mv -f "+filedir+"special_ascii.txt "+output_dir+"/special_ascii.txt")
 end if
 
 if(webinput.eq.True) then
@@ -138,7 +138,7 @@ if(webinput.eq.True) then
     specialnum = 0
   end if
   asciiwrite ("special_ascii.txt" , txtarea)
-  zz = systemfunc("mv -f "+filedir+"special_ascii.txt /var/www/html/maps/special_ascii.txt")
+  zz = systemfunc("mv -f "+filedir+"special_ascii.txt "+output_dir+"/special_ascii.txt")
 
 
 end if
@@ -984,14 +984,14 @@ end if
 
 
 if (specialnum.eq.0) then
-  special_file = "/var/www/html/maps/special_ascii.txt"
+  special_file = output_dir+"/special_ascii.txt"
   ;specialText = "Lightning Strikes"
   ;specialText = "Sept Sea Ice Extent"
   specialText = "User-Specified Correlation"
 end if
 
 if (specialnum.eq.99) then
-  special_file = "/var/www/html/maps/special_ascii.txt"   ; this is a dummy file that isn't actually used
+  special_file = output_dir+"/special_ascii.txt"   ; this is a dummy file that isn't actually used
   specialText = "User-Specified Correlation"
 end if
 
@@ -1018,7 +1018,7 @@ specialAnalysis1 = new(NumAnalysisYears,float)
 specialAnalysis0@_FillValue = 9999.0
 specialAnalysis1@_FillValue = 9999.0
 asciiwrite ("specialname.txt" , specialText)
-zz = systemfunc("mv -f "+filedir+"specialname.txt /var/www/html/maps/specialname.txt")
+zz = systemfunc("mv -f "+filedir+"specialname.txt "+output_dir+"/specialname.txt")
 ;*******************************
 ;*******************************
 
@@ -1327,9 +1327,9 @@ if (justcorrelations.ge.1.and.justcorrelations.le.2) then
     delete(rcor1)
     delete(rescor1)
     delete(plot90)
-    zz = systemfunc("mv -f "+filedir+"cor_big1.png /var/www/html/maps/cor_big1_a.png")
-    zz = systemfunc("convert /var/www/html/maps/cor_big1_a.png -crop 1130x1400+150+0 -quality 80 /var/www/html/maps/cor_big1.jpg")
-    zz = systemfunc("rm -f /var/www/html/maps/cor_big1_a.png")
+    zz = systemfunc("mv -f "+filedir+"cor_big1.png "+output_dir+"/cor_big1_a.png")
+    zz = systemfunc("convert "+output_dir+"/cor_big1_a.png -crop 1130x1400+150+0 -quality 80 "+output_dir+"/cor_big1.jpg")
+    zz = systemfunc("rm -f "+output_dir+"/cor_big1_a.png")
 
     plot90 = gsn_csm_contour_map_polar(wks_cor2,rcor2,rescor2)
     draw(plot90)
@@ -1338,9 +1338,9 @@ if (justcorrelations.ge.1.and.justcorrelations.le.2) then
     delete(rcor2)
     delete(rescor2)
     delete(plot90)
-    zz = systemfunc("mv -f "+filedir+"cor_big2.png /var/www/html/maps/cor_big2_a.png")
-    zz = systemfunc("convert /var/www/html/maps/cor_big2_a.png -crop 1130x1400+150+0 -quality 80 /var/www/html/maps/cor_big2.jpg")
-    zz = systemfunc("rm -f /var/www/html/maps/cor_big2_a.png")
+    zz = systemfunc("mv -f "+filedir+"cor_big2.png "+output_dir+"/cor_big2_a.png")
+    zz = systemfunc("convert "+output_dir+"/cor_big2_a.png -crop 1130x1400+150+0 -quality 80 "+output_dir+"/cor_big2.jpg")
+    zz = systemfunc("rm -f "+output_dir+"/cor_big2_a.png")
   end if
 
   ; TODO -- we may need to adapt the GUI so the
@@ -1848,58 +1848,58 @@ weightString2 = "SLP:"+sprintf("%6.2f",slpwgt)+" Z"+getlev(heightlev)+":"+sprint
 
 
   asciiwrite ("var.txt" , varName)
-  zz = systemfunc("mv -f "+filedir+"var.txt /var/www/html/maps/var.txt")
+  zz = systemfunc("mv -f "+filedir+"var.txt "+output_dir+"/var.txt")
   asciiwrite ("useryear1.txt" , useryearString1)
-  zz = systemfunc("mv -f "+filedir+"useryear1.txt /var/www/html/maps/useryear1.txt")
+  zz = systemfunc("mv -f "+filedir+"useryear1.txt "+output_dir+"/useryear1.txt")
   asciiwrite ("useryear2.txt" , useryearString2)
-  zz = systemfunc("mv -f "+filedir+"useryear2.txt /var/www/html/maps/useryear2.txt")
+  zz = systemfunc("mv -f "+filedir+"useryear2.txt "+output_dir+"/useryear2.txt")
   asciiwrite ("mtext1.txt" , monthRangeString1)
-  zz = systemfunc("mv -f "+filedir+"mtext1.txt /var/www/html/maps/mtext1.txt")
+  zz = systemfunc("mv -f "+filedir+"mtext1.txt "+output_dir+"/mtext1.txt")
   asciiwrite ("mtext2.txt" , monthRangeString2)
-  zz = systemfunc("mv -f "+filedir+"mtext2.txt /var/www/html/maps/mtext2.txt")
+  zz = systemfunc("mv -f "+filedir+"mtext2.txt "+output_dir+"/mtext2.txt")
   monyear1 = monthRangeString1 + " " + useryearString1
   asciiwrite ("my1.txt" , monyear1)
-  zz = systemfunc("mv -f "+filedir+"my1.txt /var/www/html/maps/my1.txt")
+  zz = systemfunc("mv -f "+filedir+"my1.txt "+output_dir+"/my1.txt")
   monyear2 = monthRangeString2 + " " + useryearString2
   asciiwrite ("my2.txt" , monyear2)
-  zz = systemfunc("mv -f "+filedir+"my2.txt /var/www/html/maps/my2.txt")
+  zz = systemfunc("mv -f "+filedir+"my2.txt "+output_dir+"/my2.txt")
   text1 = varName+" Forecast for Lat: "+AK1+" to "+AK2+" & Lon: "+AK3+" to "+AK4
   asciiwrite ("text1.txt" , text1)
-  zz = systemfunc("mv -f "+filedir+"text1.txt /var/www/html/maps/text1.txt")
+  zz = systemfunc("mv -f "+filedir+"text1.txt "+output_dir+"/text1.txt")
   text1a = "Using Analysis Area Lat: "+y1+" to "+y2+" & Lon: "+x1+" to "+x2
   asciiwrite ("text1a.txt" , text1a)
-  zz = systemfunc("mv -f "+filedir+"text1a.txt /var/www/html/maps/text1a.txt")
+  zz = systemfunc("mv -f "+filedir+"text1a.txt "+output_dir+"/text1a.txt")
   asciiwrite ("compstr.txt" , " ")
-  zz = systemfunc("mv -f "+filedir+"compstr.txt /var/www/html/maps/compstr.txt")
+  zz = systemfunc("mv -f "+filedir+"compstr.txt "+output_dir+"/compstr.txt")
   cortext1 = "Correlations During "+monthRangeString1+" With "+monthRangeString2+" Values"
   asciiwrite ("cortext1.txt" , cortext1)
-  zz = systemfunc("mv -f "+filedir+"cortext1.txt /var/www/html/maps/cortext1.txt")
+  zz = systemfunc("mv -f "+filedir+"cortext1.txt "+output_dir+"/cortext1.txt")
   cortext2 = "of "+varName+" Within Box Bounded by"
   asciiwrite ("cortext2.txt" , cortext2)
-  zz = systemfunc("mv -f "+filedir+"cortext2.txt /var/www/html/maps/cortext2.txt")
+  zz = systemfunc("mv -f "+filedir+"cortext2.txt "+output_dir+"/cortext2.txt")
   cortext3 = "Lat: "+AK1+" to "+AK2+" & Lon: "+AK3+" to "+AK4
   asciiwrite ("cortext3.txt" , cortext3)
-  zz = systemfunc("mv -f "+filedir+"cortext3.txt /var/www/html/maps/cortext3.txt")
+  zz = systemfunc("mv -f "+filedir+"cortext3.txt "+output_dir+"/cortext3.txt")
   tlevel = "T"+getlev(templev)
   asciiwrite ("tlevel.txt" , tlevel)
-  zz = systemfunc("mv -f "+filedir+"tlevel.txt /var/www/html/maps/tlevel.txt")
+  zz = systemfunc("mv -f "+filedir+"tlevel.txt "+output_dir+"/tlevel.txt")
   zlevel = "Z"+getlev(heightlev)
   asciiwrite ("zlevel.txt" , zlevel)
-  zz = systemfunc("mv -f "+filedir+"zlevel.txt /var/www/html/maps/zlevel.txt")
+  zz = systemfunc("mv -f "+filedir+"zlevel.txt "+output_dir+"/zlevel.txt")
   redbox = "Lat: "+AK1+" to "+AK2+" & Lon: "+AK3+" to "+AK4
   asciiwrite ("redbox.txt" , redbox)
-  zz = systemfunc("mv -f "+filedir+"redbox.txt /var/www/html/maps/redbox.txt")
+  zz = systemfunc("mv -f "+filedir+"redbox.txt "+output_dir+"/redbox.txt")
 
   if (txtareayesno.lt.2) then    ; special values
     cortext1 = "Correlations During "+monthRangeString1+" With"
     asciiwrite ("cortext1.txt" , cortext1)
-    zz = systemfunc("mv -f "+filedir+"cortext1.txt /var/www/html/maps/cortext1.txt")
+    zz = systemfunc("mv -f "+filedir+"cortext1.txt "+output_dir+"/cortext1.txt")
     cortext2 = "a User-Defined Time Series"
     asciiwrite ("cortext2.txt" , cortext2)
-    zz = systemfunc("mv -f "+filedir+"cortext2.txt /var/www/html/maps/cortext2.txt")
+    zz = systemfunc("mv -f "+filedir+"cortext2.txt "+output_dir+"/cortext2.txt")
     cortext3 = "(Obtain Time Series From User)"
     asciiwrite ("cortext3.txt" , cortext3)
-    zz = systemfunc("mv -f "+filedir+"cortext3.txt /var/www/html/maps/cortext3.txt")
+    zz = systemfunc("mv -f "+filedir+"cortext3.txt "+output_dir+"/cortext3.txt")
   end if
 
 
@@ -2162,14 +2162,14 @@ if (justcorrelations.eq.3) then
   draw(plot90)
   frame(wks_cor9)
   delete([/wks_cor9,plot90/])
-  zz = systemfunc("mv -f "+filedir+"SingleRSLPcor.png /var/www/html/maps/SingleRSLPcor_a.png")
+  zz = systemfunc("mv -f "+filedir+"SingleRSLPcor.png "+output_dir+"/SingleRSLPcor_a.png")
   if (polarOrclyndrical.eq.1) then
-    zz = systemfunc("convert /var/www/html/maps/SingleRSLPcor_a.png -crop 1130x1400+150+0 -quality 80 /var/www/html/maps/SingleRSLPcor.jpg")
+    zz = systemfunc("convert "+output_dir+"/SingleRSLPcor_a.png -crop 1130x1400+150+0 -quality 80 "+output_dir+"/SingleRSLPcor.jpg")
   end if
   if (polarOrclyndrical.eq.2) then
-    zz = systemfunc("convert /var/www/html/maps/SingleRSLPcor_a.png -crop 1400x1130+0+140 -quality 80 /var/www/html/maps/SingleRSLPcor.jpg")
+    zz = systemfunc("convert "+output_dir+"/SingleRSLPcor_a.png -crop 1400x1130+0+140 -quality 80 "+output_dir+"/SingleRSLPcor.jpg")
   end if
-  zz = systemfunc("rm -f /var/www/html/maps/SingleRSLPcor_a.png")
+  zz = systemfunc("rm -f "+output_dir+"/SingleRSLPcor_a.png")
 
 
   wks_cor9 = gsn_open_wks(wtypebig9,"SingleRH500cor")
@@ -2189,14 +2189,14 @@ if (justcorrelations.eq.3) then
   draw(plot90)
   frame(wks_cor9)
   delete([/wks_cor9,plot90 /])
-  zz = systemfunc("mv -f "+filedir+"SingleRH500cor.png /var/www/html/maps/SingleRH500cor_a.png")
+  zz = systemfunc("mv -f "+filedir+"SingleRH500cor.png "+output_dir+"/SingleRH500cor_a.png")
   if (polarOrclyndrical.eq.1) then
-    zz = systemfunc("convert /var/www/html/maps/SingleRH500cor_a.png -crop 1130x1400+150+0 -quality 80 /var/www/html/maps/SingleRH500cor.jpg")
+    zz = systemfunc("convert "+output_dir+"/SingleRH500cor_a.png -crop 1130x1400+150+0 -quality 80 "+output_dir+"/SingleRH500cor.jpg")
   end if
   if (polarOrclyndrical.eq.2) then
-    zz = systemfunc("convert /var/www/html/maps/SingleRH500cor_a.png -crop 1400x1130+0+140 -quality 80 /var/www/html/maps/SingleRH500cor.jpg")
+    zz = systemfunc("convert "+output_dir+"/SingleRH500cor_a.png -crop 1400x1130+0+140 -quality 80 "+output_dir+"/SingleRH500cor.jpg")
   end if
-  zz = systemfunc("rm -f /var/www/html/maps/SingleRH500cor_a.png")
+  zz = systemfunc("rm -f "+output_dir+"/SingleRH500cor_a.png")
 
 
   wks_cor9 = gsn_open_wks(wtypebig9,"SingleRT2Mcor")
@@ -2216,14 +2216,14 @@ if (justcorrelations.eq.3) then
   draw(plot90)
   frame(wks_cor9)
   delete([/wks_cor9,plot90 /])
-  zz = systemfunc("mv -f "+filedir+"SingleRT2Mcor.png /var/www/html/maps/SingleRT2Mcor_a.png")
+  zz = systemfunc("mv -f "+filedir+"SingleRT2Mcor.png "+output_dir+"/SingleRT2Mcor_a.png")
   if (polarOrclyndrical.eq.1) then
-    zz = systemfunc("convert /var/www/html/maps/SingleRT2Mcor_a.png -crop 1130x1400+150+0 -quality 80 /var/www/html/maps/SingleRT2Mcor.jpg")
+    zz = systemfunc("convert "+output_dir+"/SingleRT2Mcor_a.png -crop 1130x1400+150+0 -quality 80 "+output_dir+"/SingleRT2Mcor.jpg")
   end if
   if (polarOrclyndrical.eq.2) then
-    zz = systemfunc("convert /var/www/html/maps/SingleRT2Mcor_a.png -crop 1400x1130+0+140 -quality 80 /var/www/html/maps/SingleRT2Mcor.jpg")
+    zz = systemfunc("convert "+output_dir+"/SingleRT2Mcor_a.png -crop 1400x1130+0+140 -quality 80 "+output_dir+"/SingleRT2Mcor.jpg")
   end if
-  zz = systemfunc("rm -f /var/www/html/maps/SingleRT2Mcor_a.png")
+  zz = systemfunc("rm -f "+output_dir+"/SingleRT2Mcor_a.png")
 
 
   wks_cor9 = gsn_open_wks(wtypebig9,"SingleRT925cor")
@@ -2243,14 +2243,14 @@ if (justcorrelations.eq.3) then
   draw(plot90)
   frame(wks_cor9)
   delete([/wks_cor9,plot90 /])
-  zz = systemfunc("mv -f "+filedir+"SingleRT925cor.png /var/www/html/maps/SingleRT925cor_a.png")
+  zz = systemfunc("mv -f "+filedir+"SingleRT925cor.png "+output_dir+"/SingleRT925cor_a.png")
   if (polarOrclyndrical.eq.1) then
-    zz = systemfunc("convert /var/www/html/maps/SingleRT925cor_a.png -crop 1130x1400+150+0 -quality 80 /var/www/html/maps/SingleRT925cor.jpg")
+    zz = systemfunc("convert "+output_dir+"/SingleRT925cor_a.png -crop 1130x1400+150+0 -quality 80 "+output_dir+"/SingleRT925cor.jpg")
   end if
   if (polarOrclyndrical.eq.2) then
-    zz = systemfunc("convert /var/www/html/maps/SingleRT925cor_a.png -crop 1400x1130+0+140 -quality 80 /var/www/html/maps/SingleRT925cor.jpg")
+    zz = systemfunc("convert "+output_dir+"/SingleRT925cor_a.png -crop 1400x1130+0+140 -quality 80 "+output_dir+"/SingleRT925cor.jpg")
   end if
-  zz = systemfunc("rm -f /var/www/html/maps/SingleRT925cor_a.png")
+  zz = systemfunc("rm -f "+output_dir+"/SingleRT925cor_a.png")
 
 
   wks_cor9 = gsn_open_wks(wtypebig9,"SingleRSSTcor")
@@ -2270,14 +2270,14 @@ if (justcorrelations.eq.3) then
   draw(plot90)
   frame(wks_cor9)
   delete([/wks_cor9,plot90 /])
-  zz = systemfunc("mv -f "+filedir+"SingleRSSTcor.png /var/www/html/maps/SingleRSSTcor_a.png")
+  zz = systemfunc("mv -f "+filedir+"SingleRSSTcor.png "+output_dir+"/SingleRSSTcor_a.png")
   if (polarOrclyndrical.eq.1) then
-    zz = systemfunc("convert /var/www/html/maps/SingleRSSTcor_a.png -crop 1130x1400+150+0 -quality 80 /var/www/html/maps/SingleRSSTcor.jpg")
+    zz = systemfunc("convert "+output_dir+"/SingleRSSTcor_a.png -crop 1130x1400+150+0 -quality 80 "+output_dir+"/SingleRSSTcor.jpg")
   end if
   if (polarOrclyndrical.eq.2) then
-    zz = systemfunc("convert /var/www/html/maps/SingleRSSTcor_a.png -crop 1400x1130+0+140 -quality 80 /var/www/html/maps/SingleRSSTcor.jpg")
+    zz = systemfunc("convert "+output_dir+"/SingleRSSTcor_a.png -crop 1400x1130+0+140 -quality 80 "+output_dir+"/SingleRSSTcor.jpg")
   end if
-  zz = systemfunc("rm -f /var/www/html/maps/SingleRSSTcor_a.png")
+  zz = systemfunc("rm -f "+output_dir+"/SingleRSSTcor_a.png")
 
 
 
@@ -2316,14 +2316,14 @@ if (justcorrelations.eq.3) then
   draw(plot90)
   frame(wks_cor9)
   delete([/wks_cor9,plot90 /])
-  zz = systemfunc("mv -f "+filedir+"SingleRSLPsig.png /var/www/html/maps/SingleRSLPsig_a.png")
+  zz = systemfunc("mv -f "+filedir+"SingleRSLPsig.png "+output_dir+"/SingleRSLPsig_a.png")
   if (polarOrclyndrical.eq.1) then
-    zz = systemfunc("convert /var/www/html/maps/SingleRSLPsig_a.png -crop 1130x1400+150+0 -quality 80 /var/www/html/maps/SingleRSLPsig.jpg")
+    zz = systemfunc("convert "+output_dir+"/SingleRSLPsig_a.png -crop 1130x1400+150+0 -quality 80 "+output_dir+"/SingleRSLPsig.jpg")
   end if
   if (polarOrclyndrical.eq.2) then
-    zz = systemfunc("convert /var/www/html/maps/SingleRSLPsig_a.png -crop 1400x1130+0+140 -quality 80 /var/www/html/maps/SingleRSLPsig.jpg")
+    zz = systemfunc("convert "+output_dir+"/SingleRSLPsig_a.png -crop 1400x1130+0+140 -quality 80 "+output_dir+"/SingleRSLPsig.jpg")
   end if
-  zz = systemfunc("rm -f /var/www/html/maps/SingleRSLPsig_a.png")
+  zz = systemfunc("rm -f "+output_dir+"/SingleRSLPsig_a.png")
 
 
   wks_cor9 = gsn_open_wks(wtypebig9,"SingleRH500sig")
@@ -2343,14 +2343,14 @@ if (justcorrelations.eq.3) then
   draw(plot90)
   frame(wks_cor9)
   delete([/wks_cor9,plot90/])
-  zz = systemfunc("mv -f "+filedir+"SingleRH500sig.png /var/www/html/maps/SingleRH500sig_a.png")
+  zz = systemfunc("mv -f "+filedir+"SingleRH500sig.png "+output_dir+"/SingleRH500sig_a.png")
   if (polarOrclyndrical.eq.1) then
-    zz = systemfunc("convert /var/www/html/maps/SingleRH500sig_a.png -crop 1130x1400+150+0 -quality 80 /var/www/html/maps/SingleRH500sig.jpg")
+    zz = systemfunc("convert "+output_dir+"/SingleRH500sig_a.png -crop 1130x1400+150+0 -quality 80 "+output_dir+"/SingleRH500sig.jpg")
   end if
   if (polarOrclyndrical.eq.2) then
-    zz = systemfunc("convert /var/www/html/maps/SingleRH500sig_a.png -crop 1400x1130+0+140 -quality 80 /var/www/html/maps/SingleRH500sig.jpg")
+    zz = systemfunc("convert "+output_dir+"/SingleRH500sig_a.png -crop 1400x1130+0+140 -quality 80 "+output_dir+"/SingleRH500sig.jpg")
   end if
-  zz = systemfunc("rm -f /var/www/html/maps/SingleRH500sig_a.png")
+  zz = systemfunc("rm -f "+output_dir+"/SingleRH500sig_a.png")
 
 
   wks_cor9 = gsn_open_wks(wtypebig9,"SingleRT2Msig")
@@ -2370,14 +2370,14 @@ if (justcorrelations.eq.3) then
   draw(plot90)
   frame(wks_cor9)
   delete([/wks_cor9,plot90 /])
-  zz = systemfunc("mv -f "+filedir+"SingleRT2Msig.png /var/www/html/maps/SingleRT2Msig_a.png")
+  zz = systemfunc("mv -f "+filedir+"SingleRT2Msig.png "+output_dir+"/SingleRT2Msig_a.png")
   if (polarOrclyndrical.eq.1) then
-    zz = systemfunc("convert /var/www/html/maps/SingleRT2Msig_a.png -crop 1130x1400+150+0 -quality 80 /var/www/html/maps/SingleRT2Msig.jpg")
+    zz = systemfunc("convert "+output_dir+"/SingleRT2Msig_a.png -crop 1130x1400+150+0 -quality 80 "+output_dir+"/SingleRT2Msig.jpg")
   end if
   if (polarOrclyndrical.eq.2) then
-    zz = systemfunc("convert /var/www/html/maps/SingleRT2Msig_a.png -crop 1400x1130+0+140 -quality 80 /var/www/html/maps/SingleRT2Msig.jpg")
+    zz = systemfunc("convert "+output_dir+"/SingleRT2Msig_a.png -crop 1400x1130+0+140 -quality 80 "+output_dir+"/SingleRT2Msig.jpg")
   end if
-  zz = systemfunc("rm -f /var/www/html/maps/SingleRT2Msig_a.png")
+  zz = systemfunc("rm -f "+output_dir+"/SingleRT2Msig_a.png")
 
 
   wks_cor9 = gsn_open_wks(wtypebig9,"SingleRT925sig")
@@ -2397,14 +2397,14 @@ if (justcorrelations.eq.3) then
   draw(plot90)
   frame(wks_cor9)
   delete([/wks_cor9,plot90 /])
-  zz = systemfunc("mv -f "+filedir+"SingleRT925sig.png /var/www/html/maps/SingleRT925sig_a.png")
+  zz = systemfunc("mv -f "+filedir+"SingleRT925sig.png "+output_dir+"/SingleRT925sig_a.png")
   if (polarOrclyndrical.eq.1) then
-    zz = systemfunc("convert /var/www/html/maps/SingleRT925sig_a.png -crop 1130x1400+150+0 -quality 80 /var/www/html/maps/SingleRT925sig.jpg")
+    zz = systemfunc("convert "+output_dir+"/SingleRT925sig_a.png -crop 1130x1400+150+0 -quality 80 "+output_dir+"/SingleRT925sig.jpg")
   end if
   if (polarOrclyndrical.eq.2) then
-    zz = systemfunc("convert /var/www/html/maps/SingleRT925sig_a.png -crop 1400x1130+0+140 -quality 80 /var/www/html/maps/SingleRT925sig.jpg")
+    zz = systemfunc("convert "+output_dir+"/SingleRT925sig_a.png -crop 1400x1130+0+140 -quality 80 "+output_dir+"/SingleRT925sig.jpg")
   end if
-  zz = systemfunc("rm -f /var/www/html/maps/SingleRT925sig_a.png")
+  zz = systemfunc("rm -f "+output_dir+"/SingleRT925sig_a.png")
 
 
   wks_cor9 = gsn_open_wks(wtypebig9,"SingleRSSTsig")
@@ -2424,14 +2424,14 @@ if (justcorrelations.eq.3) then
   draw(plot90)
   frame(wks_cor9)
   delete([/wks_cor9,plot90 /])
-  zz = systemfunc("mv -f "+filedir+"SingleRSSTsig.png /var/www/html/maps/SingleRSSTsig_a.png")
+  zz = systemfunc("mv -f "+filedir+"SingleRSSTsig.png "+output_dir+"/SingleRSSTsig_a.png")
   if (polarOrclyndrical.eq.1) then
-    zz = systemfunc("convert /var/www/html/maps/SingleRSSTsig_a.png -crop 1130x1400+150+0 -quality 80 /var/www/html/maps/SingleRSSTsig.jpg")
+    zz = systemfunc("convert "+output_dir+"/SingleRSSTsig_a.png -crop 1130x1400+150+0 -quality 80 "+output_dir+"/SingleRSSTsig.jpg")
   end if
   if (polarOrclyndrical.eq.2) then
-    zz = systemfunc("convert /var/www/html/maps/SingleRSSTsig_a.png -crop 1400x1130+0+140 -quality 80 /var/www/html/maps/SingleRSSTsig.jpg")
+    zz = systemfunc("convert "+output_dir+"/SingleRSSTsig_a.png -crop 1400x1130+0+140 -quality 80 "+output_dir+"/SingleRSSTsig.jpg")
   end if
-  zz = systemfunc("rm -f /var/www/html/maps/SingleRSSTsig_a.png")
+  zz = systemfunc("rm -f "+output_dir+"/SingleRSSTsig_a.png")
 
 
   multRcor@long_name = "Multiple Linear Regression Significance Plot"
@@ -2461,14 +2461,14 @@ if (justcorrelations.eq.3) then
   draw(plot90)
   frame(wks_cor9)
   delete([/wks_cor9,plot90 /])
-  zz = systemfunc("mv -f "+filedir+"MultipleR.png /var/www/html/maps/MultipleR_a.png")
+  zz = systemfunc("mv -f "+filedir+"MultipleR.png "+output_dir+"/MultipleR_a.png")
   if (polarOrclyndrical.eq.1) then
-    zz = systemfunc("convert /var/www/html/maps/MultipleR_a.png -crop 1130x1400+150+0 -quality 80 /var/www/html/maps/MultipleR.jpg")
+    zz = systemfunc("convert "+output_dir+"/MultipleR_a.png -crop 1130x1400+150+0 -quality 80 "+output_dir+"/MultipleR.jpg")
   end if
   if (polarOrclyndrical.eq.2) then
-    zz = systemfunc("convert /var/www/html/maps/MultipleR_a.png -crop 1400x1130+0+140 -quality 80 /var/www/html/maps/MultipleR.jpg")
+    zz = systemfunc("convert "+output_dir+"/MultipleR_a.png -crop 1400x1130+0+140 -quality 80 "+output_dir+"/MultipleR.jpg")
   end if
-  zz = systemfunc("rm -f /var/www/html/maps/MultipleR_a.png")
+  zz = systemfunc("rm -f "+output_dir+"/MultipleR_a.png")
 
 
   print(multRcor(:,{45},{210})+"")
@@ -3387,7 +3387,7 @@ sp5 = specialArray1(toint(YearArray(xxyy(ii+4)))-1948)
 
 specialResult = (sp1+sp2+sp3+sp4+sp5)/5.0
 asciiwrite ("specialresult.txt" , sprintf("%6.2f",specialResult))
-zz = systemfunc("mv -f "+filedir+"specialresult.txt /var/www/html/maps/specialresult.txt")
+zz = systemfunc("mv -f "+filedir+"specialresult.txt "+output_dir+"/specialresult.txt")
 
 ;*****
 print("Sept sea ice forecast for "+usermonth+"/"+useryear+" using "+exmthlabel+" months of data: "+YearArray(xxyy(ii))+","+YearArray(xxyy(ii+1))+","+YearArray(xxyy(ii+2))+","+YearArray(xxyy(ii+3))+","+YearArray(xxyy(ii+4))+","+specialResult)
@@ -3919,82 +3919,82 @@ frame(wks_pan)
 delete(wks_pan)
 
 ;; delete existing image files
-  zz = systemfunc("rm -f /var/www/html/maps/a.png")
-  zz = systemfunc("rm -f /var/www/html/maps/a1.png")
-  zz = systemfunc("rm -f /var/www/html/maps/a2.png")
-  zz = systemfunc("rm -f /var/www/html/maps/a3.png")
-  zz = systemfunc("rm -f /var/www/html/maps/a4.png")
-  zz = systemfunc("rm -f /var/www/html/maps/a5.png")
-  zz = systemfunc("rm -f /var/www/html/maps/b.png")
-  zz = systemfunc("rm -f /var/www/html/maps/b1.png")
-  zz = systemfunc("rm -f /var/www/html/maps/b2.png")
-  zz = systemfunc("rm -f /var/www/html/maps/b3.png")
-  zz = systemfunc("rm -f /var/www/html/maps/b4.png")
-  zz = systemfunc("rm -f /var/www/html/maps/b5.png")
-  zz = systemfunc("rm -f /var/www/html/maps/ice1.png")
-  zz = systemfunc("rm -f /var/www/html/maps/s1.png")
-  zz = systemfunc("rm -f /var/www/html/maps/s2.png")
-  zz = systemfunc("rm -f /var/www/html/maps/v1.png")
-  zz = systemfunc("rm -f /var/www/html/maps/v.png")
+  zz = systemfunc("rm -f "+output_dir+"/a.png")
+  zz = systemfunc("rm -f "+output_dir+"/a1.png")
+  zz = systemfunc("rm -f "+output_dir+"/a2.png")
+  zz = systemfunc("rm -f "+output_dir+"/a3.png")
+  zz = systemfunc("rm -f "+output_dir+"/a4.png")
+  zz = systemfunc("rm -f "+output_dir+"/a5.png")
+  zz = systemfunc("rm -f "+output_dir+"/b.png")
+  zz = systemfunc("rm -f "+output_dir+"/b1.png")
+  zz = systemfunc("rm -f "+output_dir+"/b2.png")
+  zz = systemfunc("rm -f "+output_dir+"/b3.png")
+  zz = systemfunc("rm -f "+output_dir+"/b4.png")
+  zz = systemfunc("rm -f "+output_dir+"/b5.png")
+  zz = systemfunc("rm -f "+output_dir+"/ice1.png")
+  zz = systemfunc("rm -f "+output_dir+"/s1.png")
+  zz = systemfunc("rm -f "+output_dir+"/s2.png")
+  zz = systemfunc("rm -f "+output_dir+"/v1.png")
+  zz = systemfunc("rm -f "+output_dir+"/v.png")
 
-  zz = systemfunc("mv -f "+filedir+"pan_a.png /var/www/html/maps/pan_a.png")
-  zz = systemfunc("convert /var/www/html/maps/pan_a.png -crop 800x1000+50+0 /var/www/html/maps/a.png")
-  zz = systemfunc("rm -f /var/www/html/maps/pan_a.png")
-  zz = systemfunc("mv -f "+filedir+"pan_b.png /var/www/html/maps/pan_b.png")
-  zz = systemfunc("convert /var/www/html/maps/pan_b.png -crop 800x1000+50+0 /var/www/html/maps/b.png")
-  zz = systemfunc("rm -f /var/www/html/maps/pan_b.png")
+  zz = systemfunc("mv -f "+filedir+"pan_a.png "+output_dir+"/pan_a.png")
+  zz = systemfunc("convert "+output_dir+"/pan_a.png -crop 800x1000+50+0 "+output_dir+"/a.png")
+  zz = systemfunc("rm -f "+output_dir+"/pan_a.png")
+  zz = systemfunc("mv -f "+filedir+"pan_b.png "+output_dir+"/pan_b.png")
+  zz = systemfunc("convert "+output_dir+"/pan_b.png -crop 800x1000+50+0 "+output_dir+"/b.png")
+  zz = systemfunc("rm -f "+output_dir+"/pan_b.png")
 
-  zz = systemfunc("mv -f "+filedir+"pan_a1.png /var/www/html/maps/pan_a1.png")
-  zz = systemfunc("convert /var/www/html/maps/pan_a1.png -crop 800x1000+50+0 /var/www/html/maps/a1.png")
-  zz = systemfunc("rm -f /var/www/html/maps/pan_a1.png")
-  zz = systemfunc("mv -f "+filedir+"pan_b1.png /var/www/html/maps/pan_b1.png")
-  zz = systemfunc("convert /var/www/html/maps/pan_b1.png -crop 800x1000+50+0 /var/www/html/maps/b1.png")
-  zz = systemfunc("rm -f /var/www/html/maps/pan_b1.png")
+  zz = systemfunc("mv -f "+filedir+"pan_a1.png "+output_dir+"/pan_a1.png")
+  zz = systemfunc("convert "+output_dir+"/pan_a1.png -crop 800x1000+50+0 "+output_dir+"/a1.png")
+  zz = systemfunc("rm -f "+output_dir+"/pan_a1.png")
+  zz = systemfunc("mv -f "+filedir+"pan_b1.png "+output_dir+"/pan_b1.png")
+  zz = systemfunc("convert "+output_dir+"/pan_b1.png -crop 800x1000+50+0 "+output_dir+"/b1.png")
+  zz = systemfunc("rm -f "+output_dir+"/pan_b1.png")
 
-  zz = systemfunc("mv -f "+filedir+"pan_a2.png /var/www/html/maps/pan_a2.png")
-  zz = systemfunc("convert /var/www/html/maps/pan_a2.png -crop 800x1000+50+0 /var/www/html/maps/a2.png")
-  zz = systemfunc("rm -f /var/www/html/maps/pan_a2.png")
-  zz = systemfunc("mv -f "+filedir+"pan_b2.png /var/www/html/maps/pan_b2.png")
-  zz = systemfunc("convert /var/www/html/maps/pan_b2.png -crop 800x1000+50+0 /var/www/html/maps/b2.png")
-  zz = systemfunc("rm -f /var/www/html/maps/pan_b2.png")
+  zz = systemfunc("mv -f "+filedir+"pan_a2.png "+output_dir+"/pan_a2.png")
+  zz = systemfunc("convert "+output_dir+"/pan_a2.png -crop 800x1000+50+0 "+output_dir+"/a2.png")
+  zz = systemfunc("rm -f "+output_dir+"/pan_a2.png")
+  zz = systemfunc("mv -f "+filedir+"pan_b2.png "+output_dir+"/pan_b2.png")
+  zz = systemfunc("convert "+output_dir+"/pan_b2.png -crop 800x1000+50+0 "+output_dir+"/b2.png")
+  zz = systemfunc("rm -f "+output_dir+"/pan_b2.png")
 
-  zz = systemfunc("mv -f "+filedir+"pan_a3.png /var/www/html/maps/pan_a3.png")
-  zz = systemfunc("convert /var/www/html/maps/pan_a3.png -crop 800x1000+50+0 /var/www/html/maps/a3.png")
-  zz = systemfunc("rm -f /var/www/html/maps/pan_a3.png")
-  zz = systemfunc("mv -f "+filedir+"pan_b3.png /var/www/html/maps/pan_b3.png")
-  zz = systemfunc("convert /var/www/html/maps/pan_b3.png -crop 800x1000+50+0 /var/www/html/maps/b3.png")
-  zz = systemfunc("rm -f /var/www/html/maps/pan_b3.png")
+  zz = systemfunc("mv -f "+filedir+"pan_a3.png "+output_dir+"/pan_a3.png")
+  zz = systemfunc("convert "+output_dir+"/pan_a3.png -crop 800x1000+50+0 "+output_dir+"/a3.png")
+  zz = systemfunc("rm -f "+output_dir+"/pan_a3.png")
+  zz = systemfunc("mv -f "+filedir+"pan_b3.png "+output_dir+"/pan_b3.png")
+  zz = systemfunc("convert "+output_dir+"/pan_b3.png -crop 800x1000+50+0 "+output_dir+"/b3.png")
+  zz = systemfunc("rm -f "+output_dir+"/pan_b3.png")
 
-  zz = systemfunc("mv -f "+filedir+"pan_a4.png /var/www/html/maps/pan_a4.png")
-  zz = systemfunc("convert /var/www/html/maps/pan_a4.png -crop 800x1000+50+0 /var/www/html/maps/a4.png")
-  zz = systemfunc("rm -f /var/www/html/maps/pan_a4.png")
-  zz = systemfunc("mv -f "+filedir+"pan_b4.png /var/www/html/maps/pan_b4.png")
-  zz = systemfunc("convert /var/www/html/maps/pan_b4.png -crop 800x1000+50+0 /var/www/html/maps/b4.png")
-  zz = systemfunc("rm -f /var/www/html/maps/pan_b4.png")
+  zz = systemfunc("mv -f "+filedir+"pan_a4.png "+output_dir+"/pan_a4.png")
+  zz = systemfunc("convert "+output_dir+"/pan_a4.png -crop 800x1000+50+0 "+output_dir+"/a4.png")
+  zz = systemfunc("rm -f "+output_dir+"/pan_a4.png")
+  zz = systemfunc("mv -f "+filedir+"pan_b4.png "+output_dir+"/pan_b4.png")
+  zz = systemfunc("convert "+output_dir+"/pan_b4.png -crop 800x1000+50+0 "+output_dir+"/b4.png")
+  zz = systemfunc("rm -f "+output_dir+"/pan_b4.png")
 
-  zz = systemfunc("mv -f "+filedir+"pan_a5.png /var/www/html/maps/pan_a5.png")
-  zz = systemfunc("convert /var/www/html/maps/pan_a5.png -crop 800x1000+50+0 /var/www/html/maps/a5.png")
-  zz = systemfunc("rm -f /var/www/html/maps/pan_a5.png")
-  zz = systemfunc("mv -f "+filedir+"pan_b5.png /var/www/html/maps/pan_b5.png")
-  zz = systemfunc("convert /var/www/html/maps/pan_b5.png -crop 800x1000+50+0 /var/www/html/maps/b5.png")
-  zz = systemfunc("rm -f /var/www/html/maps/pan_b5.png")
+  zz = systemfunc("mv -f "+filedir+"pan_a5.png "+output_dir+"/pan_a5.png")
+  zz = systemfunc("convert "+output_dir+"/pan_a5.png -crop 800x1000+50+0 "+output_dir+"/a5.png")
+  zz = systemfunc("rm -f "+output_dir+"/pan_a5.png")
+  zz = systemfunc("mv -f "+filedir+"pan_b5.png "+output_dir+"/pan_b5.png")
+  zz = systemfunc("convert "+output_dir+"/pan_b5.png -crop 800x1000+50+0 "+output_dir+"/b5.png")
+  zz = systemfunc("rm -f "+output_dir+"/pan_b5.png")
 
 
 if (numAnalogsToUse.lt.5) then
-  zz = systemfunc("cp -f /var/www/html/maps/NA.png /var/www/html/maps/a5.png")
-  zz = systemfunc("cp -f /var/www/html/maps/NA.png /var/www/html/maps/b5.png")
+  zz = systemfunc("cp -f "+output_dir+"/NA.png "+output_dir+"/a5.png")
+  zz = systemfunc("cp -f "+output_dir+"/NA.png "+output_dir+"/b5.png")
 end if
 if (numAnalogsToUse.lt.4) then
-  zz = systemfunc("cp -f /var/www/html/maps/NA.png /var/www/html/maps/a4.png")
-  zz = systemfunc("cp -f /var/www/html/maps/NA.png /var/www/html/maps/b4.png")
+  zz = systemfunc("cp -f "+output_dir+"/NA.png "+output_dir+"/a4.png")
+  zz = systemfunc("cp -f "+output_dir+"/NA.png "+output_dir+"/b4.png")
 end if
 if (numAnalogsToUse.lt.3) then
-  zz = systemfunc("cp -f /var/www/html/maps/NA.png /var/www/html/maps/a3.png")
-  zz = systemfunc("cp -f /var/www/html/maps/NA.png /var/www/html/maps/b3.png")
+  zz = systemfunc("cp -f "+output_dir+"/NA.png "+output_dir+"/a3.png")
+  zz = systemfunc("cp -f "+output_dir+"/NA.png "+output_dir+"/b3.png")
 end if
 if (numAnalogsToUse.lt.2) then
-  zz = systemfunc("cp -f /var/www/html/maps/NA.png /var/www/html/maps/a2.png")
-  zz = systemfunc("cp -f /var/www/html/maps/NA.png /var/www/html/maps/b2.png")
+  zz = systemfunc("cp -f "+output_dir+"/NA.png "+output_dir+"/a2.png")
+  zz = systemfunc("cp -f "+output_dir+"/NA.png "+output_dir+"/b2.png")
 end if
 
 
@@ -4015,7 +4015,7 @@ end if
     text2 = "Top  Atmospheric Match Year Is: "+YearArray(wwww(ii))+"."
   end if
   asciiwrite ("text2.txt" , text2)
-  zz = systemfunc("mv -f "+filedir+"text2.txt /var/www/html/maps/text2.txt")
+  zz = systemfunc("mv -f "+filedir+"text2.txt "+output_dir+"/text2.txt")
 
   text3 = "SLP:"+sprintf("%6.2f",slpwgt)+", Z"+getlev(heightlev)+":"+sprintf("%6.2f",h500wgt)+", T2M:"+sprintf("%6.2f",t2mwgt)+", T"+getlev(templev)+":"+sprintf("%6.2f",t925wgt)+", SST:"+sprintf("%6.2f",sstwgt)+"."
 
@@ -4030,33 +4030,33 @@ end if
 
 
   asciiwrite ("rms1.txt" , sprintf("%6.3f",weightedArray1(wwww(ii))))
-  zz = systemfunc("mv -f "+filedir+"rms1.txt /var/www/html/maps/rms1.txt")
+  zz = systemfunc("mv -f "+filedir+"rms1.txt "+output_dir+"/rms1.txt")
   asciiwrite ("rms2.txt" , sprintf("%6.3f",weightedArray1(wwww(ii+1))))
-  zz = systemfunc("mv -f "+filedir+"rms2.txt /var/www/html/maps/rms2.txt")
+  zz = systemfunc("mv -f "+filedir+"rms2.txt "+output_dir+"/rms2.txt")
   asciiwrite ("rms3.txt" , sprintf("%6.3f",weightedArray1(wwww(ii+2))))
-  zz = systemfunc("mv -f "+filedir+"rms3.txt /var/www/html/maps/rms3.txt")
+  zz = systemfunc("mv -f "+filedir+"rms3.txt "+output_dir+"/rms3.txt")
   asciiwrite ("rms4.txt" , sprintf("%6.3f",weightedArray1(wwww(ii+3))))
-  zz = systemfunc("mv -f "+filedir+"rms4.txt /var/www/html/maps/rms4.txt")
+  zz = systemfunc("mv -f "+filedir+"rms4.txt "+output_dir+"/rms4.txt")
   asciiwrite ("rms5.txt" , sprintf("%6.3f",weightedArray1(wwww(ii+4))))
-  zz = systemfunc("mv -f "+filedir+"rms5.txt /var/www/html/maps/rms5.txt")
+  zz = systemfunc("mv -f "+filedir+"rms5.txt "+output_dir+"/rms5.txt")
 
   asciiwrite ("slpyears.txt" , weightedSLPString)
-  zz = systemfunc("mv -f "+filedir+"slpyears.txt /var/www/html/maps/slpyears.txt")
+  zz = systemfunc("mv -f "+filedir+"slpyears.txt "+output_dir+"/slpyears.txt")
   asciiwrite ("h500years.txt" , weightedH500String)
-  zz = systemfunc("mv -f "+filedir+"h500years.txt /var/www/html/maps/h500years.txt")
+  zz = systemfunc("mv -f "+filedir+"h500years.txt "+output_dir+"/h500years.txt")
   asciiwrite ("t2myears.txt" , weightedT2MString)
-  zz = systemfunc("mv -f "+filedir+"t2myears.txt /var/www/html/maps/t2myears.txt")
+  zz = systemfunc("mv -f "+filedir+"t2myears.txt "+output_dir+"/t2myears.txt")
   asciiwrite ("t925years.txt" , weightedT925String)
-  zz = systemfunc("mv -f "+filedir+"t925years.txt /var/www/html/maps/t925years.txt")
+  zz = systemfunc("mv -f "+filedir+"t925years.txt "+output_dir+"/t925years.txt")
   asciiwrite ("sstyears.txt" , weightedSSTString)
-  zz = systemfunc("mv -f "+filedir+"sstyears.txt /var/www/html/maps/sstyears.txt")
+  zz = systemfunc("mv -f "+filedir+"sstyears.txt "+output_dir+"/sstyears.txt")
   asciiwrite ("iceyears.txt" , weightedICEString)
-  zz = systemfunc("mv -f "+filedir+"iceyears.txt /var/www/html/maps/iceyears.txt")
+  zz = systemfunc("mv -f "+filedir+"iceyears.txt "+output_dir+"/iceyears.txt")
 
   asciiwrite ("heightlevel.txt" , getlev(heightlev))
-  zz = systemfunc("mv -f "+filedir+"heightlevel.txt /var/www/html/maps/heightlevel.txt")
+  zz = systemfunc("mv -f "+filedir+"heightlevel.txt "+output_dir+"/heightlevel.txt")
   asciiwrite ("templevel.txt" , getlev(templev))
-  zz = systemfunc("mv -f "+filedir+"templevel.txt /var/www/html/maps/templevel.txt")
+  zz = systemfunc("mv -f "+filedir+"templevel.txt "+output_dir+"/templevel.txt")
 
   text2 = "Top 5 Atmospheric Match Years Are: "+YearArray(wwww(ii))+", "+YearArray(wwww(ii+1))+", "+YearArray(wwww(ii+2))+", "+YearArray(wwww(ii+3))+", and "+YearArray(wwww(ii+4))+"."
   if (numAnalogsToUse.eq.4) then
@@ -4072,7 +4072,7 @@ end if
     text2 = "Top  Atmospheric Match Year Is: "+YearArray(wwww(ii))+"."
   end if
   asciiwrite ("text2.txt" , text2)
-  zz = systemfunc("mv -f "+filedir+"text2.txt /var/www/html/maps/text2.txt")
+  zz = systemfunc("mv -f "+filedir+"text2.txt "+output_dir+"/text2.txt")
   text3 = "SLP:"+sprintf("%6.2f",slpwgt)+", Z"+getlev(heightlev)+":"+sprintf("%6.2f",h500wgt)+", T2M:"+sprintf("%6.2f",t2mwgt)+", T"+getlev(templev)+":"+sprintf("%6.2f",t925wgt)+", SST:"+sprintf("%6.2f",sstwgt)+"."
   if(domanual.eq.True) then
     if(manualyesno.eq.1) then
@@ -4080,23 +4080,23 @@ end if
     end if
   end if
   asciiwrite ("text3.txt" , text3)
-  zz = systemfunc("mv -f "+filedir+"text3.txt /var/www/html/maps/text3.txt")
+  zz = systemfunc("mv -f "+filedir+"text3.txt "+output_dir+"/text3.txt")
   asciiwrite ("year1.txt" , YearArray(wwww(ii)))
-  zz = systemfunc("mv -f "+filedir+"year1.txt /var/www/html/maps/year1.txt")
+  zz = systemfunc("mv -f "+filedir+"year1.txt "+output_dir+"/year1.txt")
   asciiwrite ("year2.txt" , YearArray(wwww(ii+1)))
-  zz = systemfunc("mv -f "+filedir+"year2.txt /var/www/html/maps/year2.txt")
+  zz = systemfunc("mv -f "+filedir+"year2.txt "+output_dir+"/year2.txt")
   asciiwrite ("year3.txt" , YearArray(wwww(ii+2)))
-  zz = systemfunc("mv -f "+filedir+"year3.txt /var/www/html/maps/year3.txt")
+  zz = systemfunc("mv -f "+filedir+"year3.txt "+output_dir+"/year3.txt")
   asciiwrite ("year4.txt" , YearArray(wwww(ii+3)))
-  zz = systemfunc("mv -f "+filedir+"year4.txt /var/www/html/maps/year4.txt")
+  zz = systemfunc("mv -f "+filedir+"year4.txt "+output_dir+"/year4.txt")
   asciiwrite ("year5.txt" , YearArray(wwww(ii+4)))
-  zz = systemfunc("mv -f "+filedir+"year5.txt /var/www/html/maps/year5.txt")
+  zz = systemfunc("mv -f "+filedir+"year5.txt "+output_dir+"/year5.txt")
   asciiwrite ("verstr.txt" , "Since the forecast month is in the future, there are no verification statistics to report")
-  zz = systemfunc("mv -f "+filedir+"verstr.txt /var/www/html/maps/verstr.txt")
+  zz = systemfunc("mv -f "+filedir+"verstr.txt "+output_dir+"/verstr.txt")
 
 
-zz = systemfunc("cp -f /var/www/html/maps/NA.png /var/www/html/maps/v.png")
-zz = systemfunc("cp -f /var/www/html/maps/NA.png /var/www/html/maps/v3.png")
+zz = systemfunc("cp -f "+output_dir+"/NA.png "+output_dir+"/v.png")
+zz = systemfunc("cp -f "+output_dir+"/NA.png "+output_dir+"/v3.png")
 
 
 
@@ -4271,10 +4271,10 @@ if (b.lt.totalDims) then
 
   delete(sad)
   asciiwrite ("verstr.txt" , sadString)
-    zz = systemfunc("mv -f "+filedir+"verstr.txt /var/www/html/maps/verstr.txt")
+    zz = systemfunc("mv -f "+filedir+"verstr.txt "+output_dir+"/verstr.txt")
 
   asciiwrite ("compstr.txt" , rankString2)
-    zz = systemfunc("mv -f "+filedir+"compstr.txt /var/www/html/maps/compstr.txt")
+    zz = systemfunc("mv -f "+filedir+"compstr.txt "+output_dir+"/compstr.txt")
 
 ;  slpcor = R_value2(slpArray4,AKforCor)
 ;  h500cor = R_value2(h500Array4,AKforCor)
@@ -4322,12 +4322,12 @@ if (b.lt.totalDims) then
   delete(wks_pan)
 
 
-    zz = systemfunc("mv -f "+filedir+"pan_v1.png /var/www/html/maps/pan_v1.png")
-    zz = systemfunc("convert /var/www/html/maps/pan_v1.png -crop 800x1000+50+0 /var/www/html/maps/v1.png")
-    zz = systemfunc("rm -f /var/www/html/maps/pan_v1.png")
-    zz = systemfunc("mv -f "+filedir+"pan_v2.png /var/www/html/maps/pan_v2.png")
-    zz = systemfunc("convert /var/www/html/maps/pan_v2.png -crop 800x1000+50+0 /var/www/html/maps/v.png")
-    zz = systemfunc("rm -f /var/www/html/maps/pan_v2.png")
+    zz = systemfunc("mv -f "+filedir+"pan_v1.png "+output_dir+"/pan_v1.png")
+    zz = systemfunc("convert "+output_dir+"/pan_v1.png -crop 800x1000+50+0 "+output_dir+"/v1.png")
+    zz = systemfunc("rm -f "+output_dir+"/pan_v1.png")
+    zz = systemfunc("mv -f "+filedir+"pan_v2.png "+output_dir+"/pan_v2.png")
+    zz = systemfunc("convert "+output_dir+"/pan_v2.png -crop 800x1000+50+0 "+output_dir+"/v.png")
+    zz = systemfunc("rm -f "+output_dir+"/pan_v2.png")
 
 
 
@@ -4383,9 +4383,9 @@ if (b.lt.totalDims) then
         frame(wks_pan)
         delete(wks_pan)
         delete(nmmeave)
-        zz = systemfunc("mv -f "+filedir+"pan_v3.png /var/www/html/maps/pan_v3.png")
-        zz = systemfunc("convert /var/www/html/maps/pan_v3.png -crop 800x1000+50+0 /var/www/html/maps/v3.png")
-        zz = systemfunc("rm -f /var/www/html/maps/pan_v3.png")
+        zz = systemfunc("mv -f "+filedir+"pan_v3.png "+output_dir+"/pan_v3.png")
+        zz = systemfunc("convert "+output_dir+"/pan_v3.png -crop 800x1000+50+0 "+output_dir+"/v3.png")
+        zz = systemfunc("rm -f "+output_dir+"/pan_v3.png")
         delete([/t2mactualAK,t2mactualGlobal,t2mclimoAK,t2mclimoGlobal,t2anomAK,t2anomGlobal, analogforecast,nmmeforecast/])
       end if
     end if
@@ -4436,7 +4436,7 @@ overlay(plotr,plotr3)
 draw(plotr)
 frame(wks_pan)
 
-  zz = systemfunc("mv -f "+filedir+"pan_s1.png /var/www/html/maps/s1.png")
+  zz = systemfunc("mv -f "+filedir+"pan_s1.png "+output_dir+"/s1.png")
 
 ;print(AKt2mArray+"")
 ;print("")
@@ -4488,7 +4488,7 @@ draw(plotr)
 frame(wks_pan)
 
 
-  zz = systemfunc("mv -f "+filedir+"pan_s2.png /var/www/html/maps/s2.png")
+  zz = systemfunc("mv -f "+filedir+"pan_s2.png "+output_dir+"/s2.png")
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; ends second scatter plot section
@@ -4651,7 +4651,7 @@ theSeaIceMonthCalcsM2 = SeaIceCalcs(orderedNum,seaIceMonthM2,yrStrtIceClm,yrLast
 
 
   if (validCount .eq. 0) then
-    zz = systemfunc("cp -f /var/www/html/maps/NA.png /var/www/html/maps/ice1.png")
+    zz = systemfunc("cp -f "+output_dir+"/NA.png "+output_dir+"/ice1.png")
     print("")
     print("Since there are no years >=1979, there is no sea ice analog forecast to make.")
   end if
@@ -4938,9 +4938,9 @@ end do
 
 
   asciiwrite ("matches1.txt" , matchesString)
-  zz = systemfunc("mv -f "+filedir+"matches1.txt /var/www/html/maps/matches1.txt")
+  zz = systemfunc("mv -f "+filedir+"matches1.txt "+output_dir+"/matches1.txt")
   asciiwrite ("specialmatches1.txt" , specialString)
-  zz = systemfunc("mv -f "+filedir+"specialmatches1.txt /var/www/html/maps/specialmatches1.txt")
+  zz = systemfunc("mv -f "+filedir+"specialmatches1.txt "+output_dir+"/specialmatches1.txt")
 
 
 matchesString2 = "Since the forecast time period is in the future, a post-analysis evauation to determine how the selection years performed is not possible."
@@ -4964,7 +4964,7 @@ end do
 
 
 asciiwrite ("matches2.txt" , matchesString2)
-zz = systemfunc("mv -f "+filedir+"matches2.txt /var/www/html/maps/matches2.txt")
+zz = systemfunc("mv -f "+filedir+"matches2.txt "+output_dir+"/matches2.txt")
 
 
 
@@ -5145,7 +5145,7 @@ CorString="Multiple R (no sign)="+sprintf("%5.2f",betaMultRcor)+", R-square="+sp
 
 
 asciiwrite ("correlations.txt" , CorString)
-zz = systemfunc("mv -f "+filedir+"correlations.txt /var/www/html/maps/correlations.txt")
+zz = systemfunc("mv -f "+filedir+"correlations.txt "+output_dir+"/correlations.txt")
 
 ;print("")
 ;print(""+theSeaIceMonthCalcsM0)
@@ -5192,7 +5192,7 @@ zz = systemfunc("mv -f "+filedir+"correlations.txt /var/www/html/maps/correlatio
 
 
 
-    zz = systemfunc("mv -f "+filedir+"pan_ice1.png /var/www/html/maps/ice1.png")
+    zz = systemfunc("mv -f "+filedir+"pan_ice1.png "+output_dir+"/ice1.png")
 
 
 
@@ -5373,9 +5373,9 @@ if (doSpecial.eq.True) then
   draw(plot90)
   frame(wks_pan)
   delete([/wks_pan,rcor,res/])
-  zz = systemfunc("mv -f "+filedir+"cor_slp_11_a.png /var/www/html/maps/cor_slp_11_a.png")
-  zz = systemfunc("convert /var/www/html/maps/cor_slp_11_a.png -crop 800x1000+100+0 -quality 80 /var/www/html/maps/cor_slp_11.jpg")
-  zz = systemfunc("rm -f /var/www/html/maps/cor_slp_11_a.png")
+  zz = systemfunc("mv -f "+filedir+"cor_slp_11_a.png "+output_dir+"/cor_slp_11_a.png")
+  zz = systemfunc("convert "+output_dir+"/cor_slp_11_a.png -crop 800x1000+100+0 -quality 80 "+output_dir+"/cor_slp_11.jpg")
+  zz = systemfunc("rm -f "+output_dir+"/cor_slp_11_a.png")
 
 
   wks_pan = gsn_open_wks(wtypez,"cor_h500_11_a")
@@ -5392,9 +5392,9 @@ if (doSpecial.eq.True) then
   draw(plot90)
   frame(wks_pan)
   delete([/wks_pan,rcor,res/])
-  zz = systemfunc("mv -f "+filedir+"cor_h500_11_a.png /var/www/html/maps/cor_h500_11_a.png")
-  zz = systemfunc("convert /var/www/html/maps/cor_h500_11_a.png -crop 800x1000+100+0 -quality 80 /var/www/html/maps/cor_h500_11.jpg")
-  zz = systemfunc("rm -f /var/www/html/maps/cor_h500_11_a.png")
+  zz = systemfunc("mv -f "+filedir+"cor_h500_11_a.png "+output_dir+"/cor_h500_11_a.png")
+  zz = systemfunc("convert "+output_dir+"/cor_h500_11_a.png -crop 800x1000+100+0 -quality 80 "+output_dir+"/cor_h500_11.jpg")
+  zz = systemfunc("rm -f "+output_dir+"/cor_h500_11_a.png")
 
   wks_pan = gsn_open_wks(wtypez,"cor_t2m_11_a")
   res = SetRes1(-1, 1, 0.1,25,210)
@@ -5410,9 +5410,9 @@ if (doSpecial.eq.True) then
   draw(plot90)
   frame(wks_pan)
   delete([/wks_pan,rcor,res/])
-  zz = systemfunc("mv -f "+filedir+"cor_t2m_11_a.png /var/www/html/maps/cor_t2m_11_a.png")
-  zz = systemfunc("convert /var/www/html/maps/cor_t2m_11_a.png -crop 800x1000+100+0 -quality 80 /var/www/html/maps/cor_t2m_11.jpg")
-  zz = systemfunc("rm -f /var/www/html/maps/cor_t2m_11_a.png")
+  zz = systemfunc("mv -f "+filedir+"cor_t2m_11_a.png "+output_dir+"/cor_t2m_11_a.png")
+  zz = systemfunc("convert "+output_dir+"/cor_t2m_11_a.png -crop 800x1000+100+0 -quality 80 "+output_dir+"/cor_t2m_11.jpg")
+  zz = systemfunc("rm -f "+output_dir+"/cor_t2m_11_a.png")
 
   wks_pan = gsn_open_wks(wtypez,"cor_t925_11_a")
   res = SetRes1(-1, 1, 0.1,25,210)
@@ -5428,9 +5428,9 @@ if (doSpecial.eq.True) then
   draw(plot90)
   frame(wks_pan)
   delete([/wks_pan,rcor,res/])
-  zz = systemfunc("mv -f "+filedir+"cor_t925_11_a.png /var/www/html/maps/cor_t925_11_a.png")
-  zz = systemfunc("convert /var/www/html/maps/cor_t925_11_a.png -crop 800x1000+100+0 -quality 80 /var/www/html/maps/cor_t925_11.jpg")
-  zz = systemfunc("rm -f /var/www/html/maps/cor_t925_11_a.png")
+  zz = systemfunc("mv -f "+filedir+"cor_t925_11_a.png "+output_dir+"/cor_t925_11_a.png")
+  zz = systemfunc("convert "+output_dir+"/cor_t925_11_a.png -crop 800x1000+100+0 -quality 80 "+output_dir+"/cor_t925_11.jpg")
+  zz = systemfunc("rm -f "+output_dir+"/cor_t925_11_a.png")
 
 
 
@@ -5447,9 +5447,9 @@ if (doSpecial.eq.True) then
   draw(plot90)
   frame(wks_pan)
   delete([/wks_pan,rcor,res/])
-  zz = systemfunc("mv -f "+filedir+"cor_sst_11_a.png /var/www/html/maps/cor_sst_11_a.png")
-  zz = systemfunc("convert /var/www/html/maps/cor_sst_11_a.png -crop 800x1000+100+0 -quality 80 /var/www/html/maps/cor_sst_11.jpg")
-  zz = systemfunc("rm -f /var/www/html/maps/cor_sst_11_a.png")
+  zz = systemfunc("mv -f "+filedir+"cor_sst_11_a.png "+output_dir+"/cor_sst_11_a.png")
+  zz = systemfunc("convert "+output_dir+"/cor_sst_11_a.png -crop 800x1000+100+0 -quality 80 "+output_dir+"/cor_sst_11.jpg")
+  zz = systemfunc("rm -f "+output_dir+"/cor_sst_11_a.png")
 
 
 
@@ -5483,14 +5483,14 @@ if (doSpecial.eq.True) then
   draw(plot90)
   frame(wks_pan)
   delete([/wks_pan,res/])
-  zzz = systemfunc("mv -f "+filedir+"cor_sum_11_a.png /var/www/html/maps/cor_sum_11_a.png")
-  zzzz = systemfunc("chmod 777 /var/www/html/maps/cor_sum_11_a.png")
-  zzzzz = systemfunc("convert /var/www/html/maps/cor_sum_11_a.png -crop 800x1000+100+0 -quality 80 /var/www/html/maps/cor_sum_11z.jpg")
-  zzzzzb = systemfunc("mv -f /var/www/html/maps/cor_sum_11z.jpg /var/www/html/maps/cor_sum_11.jpg")
-  zzzzzz = systemfunc("rm -f /var/www/html/maps/cor_sum_11_a.png")
-;  zz = systemfunc("mv -f "+filedir+"cor_sum_11_a.png /var/www/html/maps/cor_sum_11_a.png")
-;  zz = systemfunc("convert /var/www/html/maps/cor_sum_11_a.png -crop 800x1000+50+0 -quality 80 /var/www/html/maps/cor_sum_11.jpg")
-;  zz = systemfunc("rm -f /var/www/html/maps/cor_sum_11_a.png")
+  zzz = systemfunc("mv -f "+filedir+"cor_sum_11_a.png "+output_dir+"/cor_sum_11_a.png")
+  zzzz = systemfunc("chmod 777 "+output_dir+"/cor_sum_11_a.png")
+  zzzzz = systemfunc("convert "+output_dir+"/cor_sum_11_a.png -crop 800x1000+100+0 -quality 80 "+output_dir+"/cor_sum_11z.jpg")
+  zzzzzb = systemfunc("mv -f "+output_dir+"/cor_sum_11z.jpg "+output_dir+"/cor_sum_11.jpg")
+  zzzzzz = systemfunc("rm -f "+output_dir+"/cor_sum_11_a.png")
+;  zz = systemfunc("mv -f "+filedir+"cor_sum_11_a.png "+output_dir+"/cor_sum_11_a.png")
+;  zz = systemfunc("convert "+output_dir+"/cor_sum_11_a.png -crop 800x1000+50+0 -quality 80 "+output_dir+"/cor_sum_11.jpg")
+;  zz = systemfunc("rm -f "+output_dir+"/cor_sum_11_a.png")
 
   absmax = rrr1    ; initialize
   absmax@_FillValue = 99999.0
@@ -5537,14 +5537,14 @@ if (doSpecial.eq.True) then
   draw(plot90)
   frame(wks_pan)
   delete([/wks_pan,res/])
-  zzz = systemfunc("mv -f "+filedir+"cor_max_11_a.png /var/www/html/maps/cor_max_11_a.png")
-  zzzz = systemfunc("chmod 777 /var/www/html/maps/cor_max_11_a.png")
-  zzzzz = systemfunc("convert /var/www/html/maps/cor_max_11_a.png -crop 800x1000+100+0 -quality 80 /var/www/html/maps/cor_max_11z.jpg")
-  zzzzzb = systemfunc("mv -f /var/www/html/maps/cor_max_11z.jpg /var/www/html/maps/cor_max_11.jpg")
-  zzzzzz = systemfunc("rm -f /var/www/html/maps/cor_max_11_a.png")
-;  zz = systemfunc("mv -f "+filedir+"cor_max_11_a.png /var/www/html/maps/cor_max_11_a.png")
-;  zz = systemfunc("convert /var/www/html/maps/cor_max_11_a.png -crop 800x1000+50+0 -quality 80 /var/www/html/maps/cor_max_11.jpg")
-;  zz = systemfunc("rm -f /var/www/html/maps/cor_max_11_a.png")
+  zzz = systemfunc("mv -f "+filedir+"cor_max_11_a.png "+output_dir+"/cor_max_11_a.png")
+  zzzz = systemfunc("chmod 777 "+output_dir+"/cor_max_11_a.png")
+  zzzzz = systemfunc("convert "+output_dir+"/cor_max_11_a.png -crop 800x1000+100+0 -quality 80 "+output_dir+"/cor_max_11z.jpg")
+  zzzzzb = systemfunc("mv -f "+output_dir+"/cor_max_11z.jpg "+output_dir+"/cor_max_11.jpg")
+  zzzzzz = systemfunc("rm -f "+output_dir+"/cor_max_11_a.png")
+;  zz = systemfunc("mv -f "+filedir+"cor_max_11_a.png "+output_dir+"/cor_max_11_a.png")
+;  zz = systemfunc("convert "+output_dir+"/cor_max_11_a.png -crop 800x1000+50+0 -quality 80 "+output_dir+"/cor_max_11.jpg")
+;  zz = systemfunc("rm -f "+output_dir+"/cor_max_11_a.png")
 
 
   absmax2 = rrr1    ; initialize
@@ -5591,14 +5591,14 @@ if (doSpecial.eq.True) then
   draw(plot90)
   frame(wks_pan)
   delete([/wks_pan,res/])
-  zzz = systemfunc("mv -f "+filedir+"cor_max2_11_a.png /var/www/html/maps/cor_max2_11_a.png")
-  zzzz = systemfunc("chmod 777 /var/www/html/maps/cor_max2_11_a.png")
-  zzzzz = systemfunc("convert /var/www/html/maps/cor_max2_11_a.png -crop 800x1000+100+0 -quality 80 /var/www/html/maps/cor_max2_11z.jpg")
-  zzzzzb = systemfunc("mv -f /var/www/html/maps/cor_max2_11z.jpg /var/www/html/maps/cor_max2_11.jpg")
-  zzzzzz = systemfunc("rm -f /var/www/html/maps/cor_max2_11_a.png")
-;  zz = systemfunc("mv -f "+filedir+"cor_max2_11_a.png /var/www/html/maps/cor_max2_11_a.png")
-;  zz = systemfunc("convert /var/www/html/maps/cor_max2_11_a.png -crop 800x1000+50+0 -quality 80 /var/www/html/maps/cor_max2_11.jpg")
-;  zz = systemfunc("rm -f /var/www/html/maps/cor_max2_11_a.png")
+  zzz = systemfunc("mv -f "+filedir+"cor_max2_11_a.png "+output_dir+"/cor_max2_11_a.png")
+  zzzz = systemfunc("chmod 777 "+output_dir+"/cor_max2_11_a.png")
+  zzzzz = systemfunc("convert "+output_dir+"/cor_max2_11_a.png -crop 800x1000+100+0 -quality 80 "+output_dir+"/cor_max2_11z.jpg")
+  zzzzzb = systemfunc("mv -f "+output_dir+"/cor_max2_11z.jpg "+output_dir+"/cor_max2_11.jpg")
+  zzzzzz = systemfunc("rm -f "+output_dir+"/cor_max2_11_a.png")
+;  zz = systemfunc("mv -f "+filedir+"cor_max2_11_a.png "+output_dir+"/cor_max2_11_a.png")
+;  zz = systemfunc("convert "+output_dir+"/cor_max2_11_a.png -crop 800x1000+50+0 -quality 80 "+output_dir+"/cor_max2_11.jpg")
+;  zz = systemfunc("rm -f "+output_dir+"/cor_max2_11_a.png")
 
 
 
@@ -5632,7 +5632,7 @@ plotr  = gsn_csm_xy (wks_pan,s1,data7,res55)        ; create plot
 
 draw(plotr)
 frame(wks_pan)
-zz = systemfunc("mv -f "+filedir+"special_plot.png /var/www/html/maps/special_plot.png")
+zz = systemfunc("mv -f "+filedir+"special_plot.png "+output_dir+"/special_plot.png")
 delete(plotr)
 delete(wks_pan)
 
@@ -5661,7 +5661,7 @@ plotr  = gsn_csm_xy (wks_pan,s1b,data7b,res55)        ; create plot
 
 draw(plotr)
 frame(wks_pan)
-zz = systemfunc("mv -f "+filedir+"special_plot2.png /var/www/html/maps/special_plot2.png")
+zz = systemfunc("mv -f "+filedir+"special_plot2.png "+output_dir+"/special_plot2.png")
 delete(plotr)
 delete(res55)
 delete(wks_pan)
@@ -5963,17 +5963,17 @@ end if
 
   if(doNMME.eq.True.and.variable.eq.3) then
     if (tempadd.le.7) then
-      zz2 = systemfunc("convert /var/www/html/maps/b.png /var/www/html/maps/v3.png  /var/www/html/maps/v.png -gravity center +append /var/www/html/maps/zzz.png")
+      zz2 = systemfunc("convert "+output_dir+"/b.png "+output_dir+"/v3.png  "+output_dir+"/v.png -gravity center +append "+output_dir+"/zzz.png")
       if(winner.eq."NMME") then
-        zz2b = systemfunc("convert /var/www/html/maps/zzz.png /var/www/html/maps/Winner_NMME.png -gravity center -append /var/www/html/maps/zzzz.png")
+        zz2b = systemfunc("convert "+output_dir+"/zzz.png "+output_dir+"/Winner_NMME.png -gravity center -append "+output_dir+"/zzzz.png")
       end if
       if(winner.eq."ANALOGS") then
-        zz2b = systemfunc("convert /var/www/html/maps/zzz.png /var/www/html/maps/Winner_Analogs.png -gravity center -append /var/www/html/maps/zzzz.png")
+        zz2b = systemfunc("convert "+output_dir+"/zzz.png "+output_dir+"/Winner_Analogs.png -gravity center -append "+output_dir+"/zzzz.png")
       end if
-    zz3 = systemfunc("convert /var/www/html/maps/zzzz.png  -bordercolor Black -border 1x1 /var/www/html/maps/VerifyPanel_"+sprinti("%0.2i", toint(ID))+".png")
-    zz4 = systemfunc("rm -f /var/www/html/maps/zzz.png")
-    zz5 = systemfunc("rm -f /var/www/html/maps/zzzz.png")
-    zz6 = systemfunc("chmod 777 /var/www/html/maps/VerifyPanel_"+sprinti("%0.2i", toint(ID))+".png")
+    zz3 = systemfunc("convert "+output_dir+"/zzzz.png  -bordercolor Black -border 1x1 "+output_dir+"/VerifyPanel_"+sprinti("%0.2i", toint(ID))+".png")
+    zz4 = systemfunc("rm -f "+output_dir+"/zzz.png")
+    zz5 = systemfunc("rm -f "+output_dir+"/zzzz.png")
+    zz6 = systemfunc("chmod 777 "+output_dir+"/VerifyPanel_"+sprinti("%0.2i", toint(ID))+".png")
     end if
   end if
 
