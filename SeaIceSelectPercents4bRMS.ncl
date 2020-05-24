@@ -32,6 +32,15 @@ data_dir = ncargpath("data")
 ; filedir = "/var/www/html/"
 ; ^ This seems to be a second source directory
 ; for file inputs.
+; Updated, this appear to be another kind
+; of scratch location where temporary text files
+; used in processing are created.
+; so this should also go into a nonce space.
+; scan for instances of asciiwrite to find
+; where this are created.
+; needs a trailing slash?
+; TODO manage trailing/slashes etc everywhere
+filedir = "/tmp/eapi/"
 
 ; Define the output directory (see comments above
 ; re: /var/www/html/maps/
@@ -107,23 +116,17 @@ if(webinput.eq.False) then
   ; properly tested the correlations?!
   justcorrelations = 0
 
-  ; TODO documenting before removing this,
-  ; need to sort out what filedir is doing.
-  ; Note dependency on "+output_dir+".
-  filedir = str_concat((/getenv("HOME"), "/"/))
+  ; TODO figure out whats up with txtareayesno
   txtareayesno = 2
 
   ; TODO note duplication between this and definitions below
   ; when the app is launched from the web (= command line options)
   txtarea = "1948,134"+cr+"1949,134"+cr+"1950,126"+cr+"1951,120"+cr+"1952,133"+cr+"1953,119"+cr+"1954,126"+cr+"1955,129"+cr+"1956,122"+cr+"1957,125"+cr+"1958,119"+cr+"1959,128"+cr+"1960,123"+cr+"1961,125"+cr+"1962,132"+cr+"1963,125"+cr+"1964,141"+cr+"1965,127"+cr+"1966,128"+cr+"1967,124"+cr+"1968,129"+cr+"1969,118"+cr+"1970,124"+cr+"1971,128"+cr+"1972,131"+cr+"1973,124"+cr+"1974,126"+cr+"1975,130"+cr+"1976,123"+cr+"1977,126"+cr+"1978,120"+cr+"1979,120"+cr+"1980,120"+cr+"1981,120"+cr+"1982,130"+cr+"1983,119"+cr+"1984,130"+cr+"1985,131"+cr+"1986,128"+cr+"1987,125"+cr+"1988,118"+cr+"1989,121"+cr+"1990,114"+cr+"1991,121"+cr+"1992,135"+cr+"1993,113"+cr+"1994,119"+cr+"1995,116"+cr+"1996,126"+cr+"1997,120"+cr+"1998,110"+cr+"1999,119"+cr+"2000,122"+cr+"2001,128"+cr+"2002,127"+cr+"2003,119"+cr+"2004,115"+cr+"2005,118"+cr+"2006,122"+cr+"2007,117"+cr+"2008,127"+cr+"2009,121"+cr+"2010,119"+cr+"2011,124"+cr+"2012,114"+cr+"2013,140"+cr+"2014,115"+cr+"2015,114"+cr+"2016,114"+cr+"2017,121"+cr+"2018,"+cr+"2019,"+cr+"2020,"+cr+"2021,"+cr+"2022,"+cr+"2023,"+cr+"2024,"+cr+"2025,"+cr+"2026,"+cr+"2027,"
-  asciiwrite ("special_ascii.txt" , txtarea)
+  asciiwrite (filedir+"special_ascii.txt" , txtarea)
   zz = systemfunc("mv -f "+filedir+"special_ascii.txt "+output_dir+"/special_ascii.txt")
 end if
 
 if(webinput.eq.True) then
-  ; TODO see note above re: filedir
-  filedir = "/var/www/html/"
-
   ; TODO xref input var txtareayesno in PHP script,
   ; ~line 682 this may be hardcoded to 2.  Find out why
   ; and if we can delete unused code here.
@@ -137,7 +140,7 @@ if(webinput.eq.True) then
     txtarea = "1948,134"+cr+"1949,134"+cr+"1950,126"+cr+"1951,120"+cr+"1952,133"+cr+"1953,119"+cr+"1954,126"+cr+"1955,129"+cr+"1956,122"+cr+"1957,125"+cr+"1958,119"+cr+"1959,128"+cr+"1960,123"+cr+"1961,125"+cr+"1962,132"+cr+"1963,125"+cr+"1964,141"+cr+"1965,127"+cr+"1966,128"+cr+"1967,124"+cr+"1968,129"+cr+"1969,118"+cr+"1970,124"+cr+"1971,128"+cr+"1972,131"+cr+"1973,124"+cr+"1974,126"+cr+"1975,130"+cr+"1976,123"+cr+"1977,126"+cr+"1978,120"+cr+"1979,120"+cr+"1980,120"+cr+"1981,120"+cr+"1982,130"+cr+"1983,119"+cr+"1984,130"+cr+"1985,131"+cr+"1986,128"+cr+"1987,125"+cr+"1988,118"+cr+"1989,121"+cr+"1990,114"+cr+"1991,121"+cr+"1992,135"+cr+"1993,113"+cr+"1994,119"+cr+"1995,116"+cr+"1996,126"+cr+"1997,120"+cr+"1998,110"+cr+"1999,119"+cr+"2000,122"+cr+"2001,128"+cr+"2002,127"+cr+"2003,119"+cr+"2004,115"+cr+"2005,118"+cr+"2006,122"+cr+"2007,117"+cr+"2008,127"+cr+"2009,121"+cr+"2010,119"+cr+"2011,124"+cr+"2012,114"+cr+"2013,140"+cr+"2014,115"+cr+"2015,114"+cr+"2016,114"+cr+"2017,121"+cr+"2018,"+cr+"2019,"+cr+"2020,"+cr+"2021,"+cr+"2022,"+cr+"2023,"+cr+"2024,"+cr+"2025,"+cr+"2026,"+cr+"2027,"
     specialnum = 0
   end if
-  asciiwrite ("special_ascii.txt" , txtarea)
+  asciiwrite (filedir+"special_ascii.txt" , txtarea)
   zz = systemfunc("mv -f "+filedir+"special_ascii.txt "+output_dir+"/special_ascii.txt")
 
 
@@ -1017,7 +1020,7 @@ specialAnalysis0 = new(NumAnalysisYears,float)
 specialAnalysis1 = new(NumAnalysisYears,float)
 specialAnalysis0@_FillValue = 9999.0
 specialAnalysis1@_FillValue = 9999.0
-asciiwrite ("specialname.txt" , specialText)
+asciiwrite (filedir+"specialname.txt" , specialText)
 zz = systemfunc("mv -f "+filedir+"specialname.txt "+output_dir+"/specialname.txt")
 ;*******************************
 ;*******************************
@@ -1216,8 +1219,8 @@ if (justcorrelations.ge.1.and.justcorrelations.le.2) then
   wtypebig2           = "png"
   wtypebig2@wkWidth  = 1400
   wtypebig2@wkHeight = 1400
-  wks_cor1 = gsn_open_wks(wtypebig1,"cor_big1")
-  wks_cor2 = gsn_open_wks(wtypebig2,"cor_big2")
+  wks_cor1 = gsn_open_wks(wtypebig1,filedir+"cor_big1")
+  wks_cor2 = gsn_open_wks(wtypebig2,filedir+"cor_big2")
   if(justcorrelations.eq.1) then
     rescor1 = SetRes3(0.2,1,"sig")
     rescor2 = SetRes3(0.2,1,"sig")
@@ -1847,58 +1850,58 @@ weightString2 = "SLP:"+sprintf("%6.2f",slpwgt)+" Z"+getlev(heightlev)+":"+sprint
 
 
 
-  asciiwrite ("var.txt" , varName)
+  asciiwrite (filedir+"var.txt" , varName)
   zz = systemfunc("mv -f "+filedir+"var.txt "+output_dir+"/var.txt")
-  asciiwrite ("useryear1.txt" , useryearString1)
+  asciiwrite (filedir+"useryear1.txt" , useryearString1)
   zz = systemfunc("mv -f "+filedir+"useryear1.txt "+output_dir+"/useryear1.txt")
-  asciiwrite ("useryear2.txt" , useryearString2)
+  asciiwrite (filedir+"useryear2.txt" , useryearString2)
   zz = systemfunc("mv -f "+filedir+"useryear2.txt "+output_dir+"/useryear2.txt")
-  asciiwrite ("mtext1.txt" , monthRangeString1)
+  asciiwrite (filedir+"mtext1.txt" , monthRangeString1)
   zz = systemfunc("mv -f "+filedir+"mtext1.txt "+output_dir+"/mtext1.txt")
-  asciiwrite ("mtext2.txt" , monthRangeString2)
+  asciiwrite (filedir+"mtext2.txt" , monthRangeString2)
   zz = systemfunc("mv -f "+filedir+"mtext2.txt "+output_dir+"/mtext2.txt")
   monyear1 = monthRangeString1 + " " + useryearString1
-  asciiwrite ("my1.txt" , monyear1)
+  asciiwrite (filedir+"my1.txt" , monyear1)
   zz = systemfunc("mv -f "+filedir+"my1.txt "+output_dir+"/my1.txt")
   monyear2 = monthRangeString2 + " " + useryearString2
-  asciiwrite ("my2.txt" , monyear2)
+  asciiwrite (filedir+"my2.txt" , monyear2)
   zz = systemfunc("mv -f "+filedir+"my2.txt "+output_dir+"/my2.txt")
   text1 = varName+" Forecast for Lat: "+AK1+" to "+AK2+" & Lon: "+AK3+" to "+AK4
-  asciiwrite ("text1.txt" , text1)
+  asciiwrite (filedir+"text1.txt" , text1)
   zz = systemfunc("mv -f "+filedir+"text1.txt "+output_dir+"/text1.txt")
   text1a = "Using Analysis Area Lat: "+y1+" to "+y2+" & Lon: "+x1+" to "+x2
-  asciiwrite ("text1a.txt" , text1a)
+  asciiwrite (filedir+"text1a.txt" , text1a)
   zz = systemfunc("mv -f "+filedir+"text1a.txt "+output_dir+"/text1a.txt")
-  asciiwrite ("compstr.txt" , " ")
+  asciiwrite (filedir+"compstr.txt" , " ")
   zz = systemfunc("mv -f "+filedir+"compstr.txt "+output_dir+"/compstr.txt")
   cortext1 = "Correlations During "+monthRangeString1+" With "+monthRangeString2+" Values"
-  asciiwrite ("cortext1.txt" , cortext1)
+  asciiwrite (filedir+"cortext1.txt" , cortext1)
   zz = systemfunc("mv -f "+filedir+"cortext1.txt "+output_dir+"/cortext1.txt")
   cortext2 = "of "+varName+" Within Box Bounded by"
-  asciiwrite ("cortext2.txt" , cortext2)
+  asciiwrite (filedir+"cortext2.txt" , cortext2)
   zz = systemfunc("mv -f "+filedir+"cortext2.txt "+output_dir+"/cortext2.txt")
   cortext3 = "Lat: "+AK1+" to "+AK2+" & Lon: "+AK3+" to "+AK4
-  asciiwrite ("cortext3.txt" , cortext3)
+  asciiwrite (filedir+"cortext3.txt" , cortext3)
   zz = systemfunc("mv -f "+filedir+"cortext3.txt "+output_dir+"/cortext3.txt")
   tlevel = "T"+getlev(templev)
-  asciiwrite ("tlevel.txt" , tlevel)
+  asciiwrite (filedir+"tlevel.txt" , tlevel)
   zz = systemfunc("mv -f "+filedir+"tlevel.txt "+output_dir+"/tlevel.txt")
   zlevel = "Z"+getlev(heightlev)
-  asciiwrite ("zlevel.txt" , zlevel)
+  asciiwrite (filedir+"zlevel.txt" , zlevel)
   zz = systemfunc("mv -f "+filedir+"zlevel.txt "+output_dir+"/zlevel.txt")
   redbox = "Lat: "+AK1+" to "+AK2+" & Lon: "+AK3+" to "+AK4
-  asciiwrite ("redbox.txt" , redbox)
+  asciiwrite (filedir+"redbox.txt" , redbox)
   zz = systemfunc("mv -f "+filedir+"redbox.txt "+output_dir+"/redbox.txt")
 
   if (txtareayesno.lt.2) then    ; special values
     cortext1 = "Correlations During "+monthRangeString1+" With"
-    asciiwrite ("cortext1.txt" , cortext1)
+    asciiwrite (filedir+"cortext1.txt" , cortext1)
     zz = systemfunc("mv -f "+filedir+"cortext1.txt "+output_dir+"/cortext1.txt")
     cortext2 = "a User-Defined Time Series"
-    asciiwrite ("cortext2.txt" , cortext2)
+    asciiwrite (filedir+"cortext2.txt" , cortext2)
     zz = systemfunc("mv -f "+filedir+"cortext2.txt "+output_dir+"/cortext2.txt")
     cortext3 = "(Obtain Time Series From User)"
-    asciiwrite ("cortext3.txt" , cortext3)
+    asciiwrite (filedir+"cortext3.txt" , cortext3)
     zz = systemfunc("mv -f "+filedir+"cortext3.txt "+output_dir+"/cortext3.txt")
   end if
 
@@ -2145,7 +2148,7 @@ if (justcorrelations.eq.3) then
   end if
 
 
-  wks_cor9 = gsn_open_wks(wtypebig9,"SingleRSLPcor")
+  wks_cor9 = gsn_open_wks(wtypebig9,filedir+"SingleRSLPcor")
   multRcorStyle2@tiXAxisString = "SLP R Correlation for " + monthRangeString1 + " time period~C~to generate a "+monthRangeString2 + " "+ varName+" forecast in cyan box.~C~Lat: "+AK1 +"-"+AK2+" Lon: "+AK3+"-"+AK4
   if (txtareayesno.lt.2) then
     multRcorStyle2@tiXAxisString = "SLP R Correlation for " + monthRangeString1 + " time period~C~with a user-defined time series"
@@ -2172,7 +2175,7 @@ if (justcorrelations.eq.3) then
   zz = systemfunc("rm -f "+output_dir+"/SingleRSLPcor_a.png")
 
 
-  wks_cor9 = gsn_open_wks(wtypebig9,"SingleRH500cor")
+  wks_cor9 = gsn_open_wks(wtypebig9,filedir+"SingleRH500cor")
   multRcorStyle2@tiXAxisString = "Z"+getlev(heightlev) + " R Correlation for " + monthRangeString1 + " time period~C~to generate a "+monthRangeString2 + " "+ varName+" forecast in cyan box.~C~Lat: "+AK1 +"-"+AK2+" Lon: "+AK3+"-"+AK4
   if (txtareayesno.lt.2) then
     multRcorStyle2@tiXAxisString = "SLP R Correlation for " + monthRangeString1 + " time period~C~with a user-defined time series"
@@ -2199,7 +2202,7 @@ if (justcorrelations.eq.3) then
   zz = systemfunc("rm -f "+output_dir+"/SingleRH500cor_a.png")
 
 
-  wks_cor9 = gsn_open_wks(wtypebig9,"SingleRT2Mcor")
+  wks_cor9 = gsn_open_wks(wtypebig9,filedir+"SingleRT2Mcor")
   multRcorStyle2@tiXAxisString = "T2M R Correlation for " + monthRangeString1 + " time period~C~to generate a "+monthRangeString2 + " "+ varName+" forecast in cyan box.~C~Lat: "+AK1 +"-"+AK2+" Lon: "+AK3+"-"+AK4
   if (txtareayesno.lt.2) then
     multRcorStyle2@tiXAxisString = "SLP R Correlation for " + monthRangeString1 + " time period~C~with a user-defined time series"
@@ -2226,7 +2229,7 @@ if (justcorrelations.eq.3) then
   zz = systemfunc("rm -f "+output_dir+"/SingleRT2Mcor_a.png")
 
 
-  wks_cor9 = gsn_open_wks(wtypebig9,"SingleRT925cor")
+  wks_cor9 = gsn_open_wks(wtypebig9,filedir+"SingleRT925cor")
   multRcorStyle2@tiXAxisString = "T"+getlev(templev) + " R Correlation for " + monthRangeString1 + " time period~C~to generate a "+monthRangeString2 + " "+ varName+" forecast in cyan box.~C~Lat: "+AK1 +"-"+AK2+" Lon: "+AK3+"-"+AK4
   if (txtareayesno.lt.2) then
     multRcorStyle2@tiXAxisString = "SLP R Correlation for " + monthRangeString1 + " time period~C~with a user-defined time series"
@@ -2253,7 +2256,7 @@ if (justcorrelations.eq.3) then
   zz = systemfunc("rm -f "+output_dir+"/SingleRT925cor_a.png")
 
 
-  wks_cor9 = gsn_open_wks(wtypebig9,"SingleRSSTcor")
+  wks_cor9 = gsn_open_wks(wtypebig9,filedir+"SingleRSSTcor")
   multRcorStyle2@tiXAxisString = "SST R Correlation for " + monthRangeString1 + " time period~C~to generate a "+monthRangeString2 + " "+ varName+" forecast in cyan box.~C~Lat: "+AK1 +"-"+AK2+" Lon: "+AK3+"-"+AK4
   if (txtareayesno.lt.2) then
     multRcorStyle2@tiXAxisString = "SLP R Correlation for " + monthRangeString1 + " time period~C~with a user-defined time series"
@@ -2299,7 +2302,7 @@ if (justcorrelations.eq.3) then
     multRcor@long_name = multRcor@long_name+"  [Using Raw Anomalies]"
   end if
 
-  wks_cor9 = gsn_open_wks(wtypebig9,"SingleRSLPsig")
+  wks_cor9 = gsn_open_wks(wtypebig9,filedir+"SingleRSLPsig")
   multRcorStyle@tiXAxisString = "SLP Significance for " + monthRangeString1 + " time period~C~to generate a "+monthRangeString2 + " "+ varName+" forecast in cyan box.~C~Lat: "+AK1 +"-"+AK2+" Lon: "+AK3+"-"+AK4
   if (txtareayesno.lt.2) then
     multRcorStyle2@tiXAxisString = "SLP Significance for " + monthRangeString1 + " time period~C~with a user-defined time series"
@@ -2326,7 +2329,7 @@ if (justcorrelations.eq.3) then
   zz = systemfunc("rm -f "+output_dir+"/SingleRSLPsig_a.png")
 
 
-  wks_cor9 = gsn_open_wks(wtypebig9,"SingleRH500sig")
+  wks_cor9 = gsn_open_wks(wtypebig9,filedir+"SingleRH500sig")
   multRcorStyle@tiXAxisString = "Z"+getlev(heightlev) + " Significance for " + monthRangeString1 + " time period~C~to generate a "+monthRangeString2 + " "+ varName+" forecast in cyan box.~C~Lat: "+AK1 +"-"+AK2+" Lon: "+AK3+"-"+AK4
   if (txtareayesno.lt.2) then
     multRcorStyle2@tiXAxisString = "SLP Significance for " + monthRangeString1 + " time period~C~with a user-defined time series"
@@ -2353,7 +2356,7 @@ if (justcorrelations.eq.3) then
   zz = systemfunc("rm -f "+output_dir+"/SingleRH500sig_a.png")
 
 
-  wks_cor9 = gsn_open_wks(wtypebig9,"SingleRT2Msig")
+  wks_cor9 = gsn_open_wks(wtypebig9,filedir+"SingleRT2Msig")
   multRcorStyle@tiXAxisString = "T2M Significance for " + monthRangeString1 + " time period~C~to generate a "+monthRangeString2 + " "+ varName+" forecast in cyan box.~C~Lat: "+AK1 +"-"+AK2+" Lon: "+AK3+"-"+AK4
   if (txtareayesno.lt.2) then
     multRcorStyle2@tiXAxisString = "SLP Significance for " + monthRangeString1 + " time period~C~with a user-defined time series"
@@ -2380,7 +2383,7 @@ if (justcorrelations.eq.3) then
   zz = systemfunc("rm -f "+output_dir+"/SingleRT2Msig_a.png")
 
 
-  wks_cor9 = gsn_open_wks(wtypebig9,"SingleRT925sig")
+  wks_cor9 = gsn_open_wks(wtypebig9,filedir+"SingleRT925sig")
   multRcorStyle@tiXAxisString = "T"+getlev(templev) + " Significance for " + monthRangeString1 + " time period~C~to generate a "+monthRangeString2 + " "+ varName+" forecast in cyan box.~C~Lat: "+AK1 +"-"+AK2+" Lon: "+AK3+"-"+AK4
   if (txtareayesno.lt.2) then
     multRcorStyle2@tiXAxisString = "SLP Significance for " + monthRangeString1 + " time period~C~with a user-defined time series"
@@ -2407,7 +2410,7 @@ if (justcorrelations.eq.3) then
   zz = systemfunc("rm -f "+output_dir+"/SingleRT925sig_a.png")
 
 
-  wks_cor9 = gsn_open_wks(wtypebig9,"SingleRSSTsig")
+  wks_cor9 = gsn_open_wks(wtypebig9,filedir+"SingleRSSTsig")
   multRcorStyle@tiXAxisString = "SST Significance for " + monthRangeString1 + " time period~C~to generate a "+monthRangeString2 + " "+ varName+" forecast in cyan box.~C~Lat: "+AK1 +"-"+AK2+" Lon: "+AK3+"-"+AK4
   if (txtareayesno.lt.2) then
     multRcorStyle2@tiXAxisString = "SLP Significance for " + monthRangeString1 + " time period~C~with a user-defined time series"
@@ -2444,7 +2447,7 @@ if (justcorrelations.eq.3) then
   if (detrend.eq.1) then
     multRcor@long_name = "Multiple Linear Regression Significance Plot (Detrended)"
   end if
-  wks_cor9 = gsn_open_wks(wtypebig9,"MultipleR")
+  wks_cor9 = gsn_open_wks(wtypebig9,filedir+"MultipleR")
   multRcorStyleMR@tiXAxisString = "Composite Multiple-R for " + monthRangeString1 + " time period~C~to generate a "+monthRangeString2 + " "+ varName+" forecast in cyan box.~C~Lat: "+AK1 +"-"+AK2+" Lon: "+AK3+"-"+AK4
   if (txtareayesno.lt.2) then
     multRcorStyle2@tiXAxisString = "Composite Multiple-R for " + monthRangeString1 + " time period~C~with a user-defined time series"
@@ -3386,7 +3389,7 @@ sp4 = specialArray1(toint(YearArray(xxyy(ii+3)))-1948)
 sp5 = specialArray1(toint(YearArray(xxyy(ii+4)))-1948)
 
 specialResult = (sp1+sp2+sp3+sp4+sp5)/5.0
-asciiwrite ("specialresult.txt" , sprintf("%6.2f",specialResult))
+asciiwrite (filedir+"specialresult.txt" , sprintf("%6.2f",specialResult))
 zz = systemfunc("mv -f "+filedir+"specialresult.txt "+output_dir+"/specialresult.txt")
 
 ;*****
@@ -3741,7 +3744,7 @@ res = True
 
 
 
-wks_pan = gsn_open_wks(wtype,"pan_a")
+wks_pan = gsn_open_wks(wtype,filedir+"pan_a")
 res = SetRes1(lowRange, highRange, interval,25,210)
 AKdiff = W_ave(cdfAll,thetime-exmth,thetime,y1,y2,x1,x2)
 AKdiff2 = W_ave(cdfAll,thetime-exmth,thetime,y1,y2,x1,x2) - W_ave(cdfClm,usermonth+12-1-exmth,usermonth+12-1,y1,y2,x1,x2)
@@ -3753,7 +3756,7 @@ draw(plot0)
 frame(wks_pan)
 delete(wks_pan)
 
-wks_pan = gsn_open_wks(wtype,"pan_b")
+wks_pan = gsn_open_wks(wtype,filedir+"pan_b")
 res = SetRes1(lowRange/4.0, highRange/4.0, interval/2.0,25,210)
 tempvar2 = cdfAll(0,:,:)
 tempvar2 = dim_avg_n_Wrap(top5(0:numAnalogsToUse-1,:,:),0) - dim_avg_n_Wrap(cdfClm(usermonth+12-1+fmnths:usermonth+12-1+fmnths+fmnths2-1,:,:),0)
@@ -3784,7 +3787,7 @@ res = SetRes1(lowRange, highRange, interval,25,210)
 
 
 
-wks_pan = gsn_open_wks(wtype,"pan_a1")
+wks_pan = gsn_open_wks(wtype,filedir+"pan_a1")
 index1= tointeger(((YearArray(sortInx(ii))-1948)*12)+ usermonth - 1 - exmth)
 index2= tointeger(((YearArray(sortInx(ii))-1948)*12)+ usermonth - 1)
 tempvar2 = cdfAll(0,:,:)
@@ -3798,7 +3801,7 @@ plot6PanelA(1) = plot1
 draw(plot1)
 frame(wks_pan)
 delete(wks_pan)
-wks_pan = gsn_open_wks(wtype,"pan_b1")
+wks_pan = gsn_open_wks(wtype,filedir+"pan_b1")
 AKdiff = W_ave(top5anom,0,0,AK1,AK2,AK3,AK4)
 res@tiXAxisString = monthRangeString2 + " " + varName + " Anomaly for Analog #1~C~  Following " + monthRangeString1 + " " + YearArray(sortInx(ii)) +"~C~Forecast Area Anom is " + sprintf("%6.3f",AKdiff)+" " + varUnits + "."+"~C~(c) University of Alaska Fairbanks"
 plotX1 = gsn_csm_contour_map_polar(wks_pan,top5anom(0,:,:),res)
@@ -3811,7 +3814,7 @@ delete(wks_pan)
 
 
 
-wks_pan = gsn_open_wks(wtype,"pan_a2")
+wks_pan = gsn_open_wks(wtype,filedir+"pan_a2")
 index1= tointeger(((YearArray(sortInx(ii+1))-1948)*12)+ usermonth - 1 - exmth)
 index2= tointeger(((YearArray(sortInx(ii+1))-1948)*12)+ usermonth - 1)
 tempvar2 = cdfAll(0,:,:)
@@ -3825,7 +3828,7 @@ plot6PanelA(2) = plot2
 draw(plot2)
 frame(wks_pan)
 delete(wks_pan)
-wks_pan = gsn_open_wks(wtype,"pan_b2")
+wks_pan = gsn_open_wks(wtype,filedir+"pan_b2")
 AKdiff = W_ave(top5anom,1,1,AK1,AK2,AK3,AK4)
 res@tiXAxisString = monthRangeString2 + " " + varName + " Anomaly for Analog #2~C~  Following " + monthRangeString1 + " " + YearArray(sortInx(ii+1)) +"~C~Red Box Anomaly is " + sprintf("%6.3f",AKdiff)+" " + varUnits + "." +"~C~(c) University of Alaska Fairbanks"
 plotX2 = gsn_csm_contour_map_polar(wks_pan,top5anom(1,:,:),res)
@@ -3841,7 +3844,7 @@ delete(wks_pan)
 
 
 
-wks_pan = gsn_open_wks(wtype,"pan_a3")
+wks_pan = gsn_open_wks(wtype,filedir+"pan_a3")
 index1= tointeger(((YearArray(sortInx(ii+2))-1948)*12)+ usermonth - 1 - exmth)
 index2= tointeger(((YearArray(sortInx(ii+2))-1948)*12)+ usermonth - 1)
 tempvar2 = cdfAll(0,:,:)
@@ -3855,7 +3858,7 @@ plot6PanelA(3) = plot3
 draw(plot3)
 frame(wks_pan)
 delete(wks_pan)
-wks_pan = gsn_open_wks(wtype,"pan_b3")
+wks_pan = gsn_open_wks(wtype,filedir+"pan_b3")
 AKdiff = W_ave(top5anom,2,2,AK1,AK2,AK3,AK4)
 res@tiXAxisString = monthRangeString2 + " " + varName + " Anomaly for Analog #3~C~  Following " + monthRangeString1 + " " + YearArray(sortInx(ii+2)) +"~C~Red Box Anomaly is " + sprintf("%6.3f",AKdiff)+" " + varUnits + "."+"~C~(c) University of Alaska Fairbanks"
 plotX3 = gsn_csm_contour_map_polar(wks_pan,top5anom(2,:,:),res)
@@ -3867,7 +3870,7 @@ frame(wks_pan)
 delete(wks_pan)
 
 
-wks_pan = gsn_open_wks(wtype,"pan_a4")
+wks_pan = gsn_open_wks(wtype,filedir+"pan_a4")
 index1= tointeger(((YearArray(sortInx(ii+3))-1948)*12)+ usermonth - 1 - exmth)
 index2= tointeger(((YearArray(sortInx(ii+3))-1948)*12)+ usermonth - 1)
 tempvar2 = cdfAll(0,:,:)
@@ -3881,7 +3884,7 @@ plot6PanelA(4) = plot4
 draw(plot4)
 frame(wks_pan)
 delete(wks_pan)
-wks_pan = gsn_open_wks(wtype,"pan_b4")
+wks_pan = gsn_open_wks(wtype,filedir+"pan_b4")
 AKdiff = W_ave(top5anom,3,3,AK1,AK2,AK3,AK4)
 res@tiXAxisString = monthRangeString2 + " " + varName + " Anomaly for Analog #3~C~  Following " + monthRangeString1 + " " + YearArray(sortInx(ii+3)) +"~C~Red Box Anomaly is " + sprintf("%6.3f",AKdiff)+" " + varUnits + "."+"~C~(c) University of Alaska Fairbanks"
 plotX4 = gsn_csm_contour_map_polar(wks_pan,top5anom(3,:,:),res)
@@ -3893,7 +3896,7 @@ frame(wks_pan)
 delete(wks_pan)
 
 
-wks_pan = gsn_open_wks(wtype,"pan_a5")
+wks_pan = gsn_open_wks(wtype,filedir+"pan_a5")
 index1= tointeger(((YearArray(sortInx(ii+4))-1948)*12)+ usermonth - 1 - exmth)
 index2= tointeger(((YearArray(sortInx(ii+4))-1948)*12)+ usermonth - 1)
 tempvar2 = cdfAll(0,:,:)
@@ -3907,7 +3910,7 @@ plot6PanelA(5) = plot5
 draw(plot5)
 frame(wks_pan)
 delete(wks_pan)
-wks_pan = gsn_open_wks(wtype,"pan_b5")
+wks_pan = gsn_open_wks(wtype,filedir+"pan_b5")
 AKdiff = W_ave(top5anom,4,4,AK1,AK2,AK3,AK4)
 res@tiXAxisString = monthRangeString2 + " " + varName + " Anomaly for Analog #5~C~  Following " + monthRangeString1 + " " + YearArray(sortInx(ii+4)) +"~C~Red Box Anomaly is " + sprintf("%6.3f",AKdiff)+" " + varUnits + "."+"~C~(c) University of Alaska Fairbanks"
 plotX5 = gsn_csm_contour_map_polar(wks_pan,top5anom(4,:,:),res)
@@ -4014,7 +4017,7 @@ end if
   if (numAnalogsToUse.eq.1) then
     text2 = "Top  Atmospheric Match Year Is: "+YearArray(wwww(ii))+"."
   end if
-  asciiwrite ("text2.txt" , text2)
+  asciiwrite (filedir+"text2.txt" , text2)
   zz = systemfunc("mv -f "+filedir+"text2.txt "+output_dir+"/text2.txt")
 
   text3 = "SLP:"+sprintf("%6.2f",slpwgt)+", Z"+getlev(heightlev)+":"+sprintf("%6.2f",h500wgt)+", T2M:"+sprintf("%6.2f",t2mwgt)+", T"+getlev(templev)+":"+sprintf("%6.2f",t925wgt)+", SST:"+sprintf("%6.2f",sstwgt)+"."
@@ -4029,33 +4032,33 @@ end if
 
 
 
-  asciiwrite ("rms1.txt" , sprintf("%6.3f",weightedArray1(wwww(ii))))
+  asciiwrite (filedir+"rms1.txt" , sprintf("%6.3f",weightedArray1(wwww(ii))))
   zz = systemfunc("mv -f "+filedir+"rms1.txt "+output_dir+"/rms1.txt")
-  asciiwrite ("rms2.txt" , sprintf("%6.3f",weightedArray1(wwww(ii+1))))
+  asciiwrite (filedir+"rms2.txt" , sprintf("%6.3f",weightedArray1(wwww(ii+1))))
   zz = systemfunc("mv -f "+filedir+"rms2.txt "+output_dir+"/rms2.txt")
-  asciiwrite ("rms3.txt" , sprintf("%6.3f",weightedArray1(wwww(ii+2))))
+  asciiwrite (filedir+"rms3.txt" , sprintf("%6.3f",weightedArray1(wwww(ii+2))))
   zz = systemfunc("mv -f "+filedir+"rms3.txt "+output_dir+"/rms3.txt")
-  asciiwrite ("rms4.txt" , sprintf("%6.3f",weightedArray1(wwww(ii+3))))
+  asciiwrite (filedir+"rms4.txt" , sprintf("%6.3f",weightedArray1(wwww(ii+3))))
   zz = systemfunc("mv -f "+filedir+"rms4.txt "+output_dir+"/rms4.txt")
-  asciiwrite ("rms5.txt" , sprintf("%6.3f",weightedArray1(wwww(ii+4))))
+  asciiwrite (filedir+"rms5.txt" , sprintf("%6.3f",weightedArray1(wwww(ii+4))))
   zz = systemfunc("mv -f "+filedir+"rms5.txt "+output_dir+"/rms5.txt")
 
-  asciiwrite ("slpyears.txt" , weightedSLPString)
+  asciiwrite (filedir+"slpyears.txt" , weightedSLPString)
   zz = systemfunc("mv -f "+filedir+"slpyears.txt "+output_dir+"/slpyears.txt")
-  asciiwrite ("h500years.txt" , weightedH500String)
+  asciiwrite (filedir+"h500years.txt" , weightedH500String)
   zz = systemfunc("mv -f "+filedir+"h500years.txt "+output_dir+"/h500years.txt")
-  asciiwrite ("t2myears.txt" , weightedT2MString)
+  asciiwrite (filedir+"t2myears.txt" , weightedT2MString)
   zz = systemfunc("mv -f "+filedir+"t2myears.txt "+output_dir+"/t2myears.txt")
-  asciiwrite ("t925years.txt" , weightedT925String)
+  asciiwrite (filedir+"t925years.txt" , weightedT925String)
   zz = systemfunc("mv -f "+filedir+"t925years.txt "+output_dir+"/t925years.txt")
-  asciiwrite ("sstyears.txt" , weightedSSTString)
+  asciiwrite (filedir+"sstyears.txt" , weightedSSTString)
   zz = systemfunc("mv -f "+filedir+"sstyears.txt "+output_dir+"/sstyears.txt")
-  asciiwrite ("iceyears.txt" , weightedICEString)
+  asciiwrite (filedir+"iceyears.txt" , weightedICEString)
   zz = systemfunc("mv -f "+filedir+"iceyears.txt "+output_dir+"/iceyears.txt")
 
-  asciiwrite ("heightlevel.txt" , getlev(heightlev))
+  asciiwrite (filedir+"heightlevel.txt" , getlev(heightlev))
   zz = systemfunc("mv -f "+filedir+"heightlevel.txt "+output_dir+"/heightlevel.txt")
-  asciiwrite ("templevel.txt" , getlev(templev))
+  asciiwrite (filedir+"templevel.txt" , getlev(templev))
   zz = systemfunc("mv -f "+filedir+"templevel.txt "+output_dir+"/templevel.txt")
 
   text2 = "Top 5 Atmospheric Match Years Are: "+YearArray(wwww(ii))+", "+YearArray(wwww(ii+1))+", "+YearArray(wwww(ii+2))+", "+YearArray(wwww(ii+3))+", and "+YearArray(wwww(ii+4))+"."
@@ -4071,7 +4074,7 @@ end if
   if (numAnalogsToUse.eq.1) then
     text2 = "Top  Atmospheric Match Year Is: "+YearArray(wwww(ii))+"."
   end if
-  asciiwrite ("text2.txt" , text2)
+  asciiwrite (filedir+"text2.txt" , text2)
   zz = systemfunc("mv -f "+filedir+"text2.txt "+output_dir+"/text2.txt")
   text3 = "SLP:"+sprintf("%6.2f",slpwgt)+", Z"+getlev(heightlev)+":"+sprintf("%6.2f",h500wgt)+", T2M:"+sprintf("%6.2f",t2mwgt)+", T"+getlev(templev)+":"+sprintf("%6.2f",t925wgt)+", SST:"+sprintf("%6.2f",sstwgt)+"."
   if(domanual.eq.True) then
@@ -4079,19 +4082,19 @@ end if
       text3 = "No weighting performed due to manual year selection."
     end if
   end if
-  asciiwrite ("text3.txt" , text3)
+  asciiwrite (filedir+"text3.txt" , text3)
   zz = systemfunc("mv -f "+filedir+"text3.txt "+output_dir+"/text3.txt")
-  asciiwrite ("year1.txt" , YearArray(wwww(ii)))
+  asciiwrite (filedir+"year1.txt" , YearArray(wwww(ii)))
   zz = systemfunc("mv -f "+filedir+"year1.txt "+output_dir+"/year1.txt")
-  asciiwrite ("year2.txt" , YearArray(wwww(ii+1)))
+  asciiwrite (filedir+"year2.txt" , YearArray(wwww(ii+1)))
   zz = systemfunc("mv -f "+filedir+"year2.txt "+output_dir+"/year2.txt")
-  asciiwrite ("year3.txt" , YearArray(wwww(ii+2)))
+  asciiwrite (filedir+"year3.txt" , YearArray(wwww(ii+2)))
   zz = systemfunc("mv -f "+filedir+"year3.txt "+output_dir+"/year3.txt")
-  asciiwrite ("year4.txt" , YearArray(wwww(ii+3)))
+  asciiwrite (filedir+"year4.txt" , YearArray(wwww(ii+3)))
   zz = systemfunc("mv -f "+filedir+"year4.txt "+output_dir+"/year4.txt")
-  asciiwrite ("year5.txt" , YearArray(wwww(ii+4)))
+  asciiwrite (filedir+"year5.txt" , YearArray(wwww(ii+4)))
   zz = systemfunc("mv -f "+filedir+"year5.txt "+output_dir+"/year5.txt")
-  asciiwrite ("verstr.txt" , "Since the forecast month is in the future, there are no verification statistics to report")
+  asciiwrite (filedir+"verstr.txt" , "Since the forecast month is in the future, there are no verification statistics to report")
   zz = systemfunc("mv -f "+filedir+"verstr.txt "+output_dir+"/verstr.txt")
 
 
@@ -4270,10 +4273,10 @@ if (b.lt.totalDims) then
 
 
   delete(sad)
-  asciiwrite ("verstr.txt" , sadString)
+  asciiwrite (filedir+"verstr.txt" , sadString)
     zz = systemfunc("mv -f "+filedir+"verstr.txt "+output_dir+"/verstr.txt")
 
-  asciiwrite ("compstr.txt" , rankString2)
+  asciiwrite (filedir+"compstr.txt" , rankString2)
     zz = systemfunc("mv -f "+filedir+"compstr.txt "+output_dir+"/compstr.txt")
 
 ;  slpcor = R_value2(slpArray4,AKforCor)
@@ -4290,7 +4293,7 @@ if (b.lt.totalDims) then
   ;rankString2="Forecast better than "+sprintf("%7.1f",theMonteCarloRank)+"% of simulations. A no-skill forecast is 50th percentile."
 
 
-  wks_pan = gsn_open_wks(wtype,"pan_v1")
+  wks_pan = gsn_open_wks(wtype,filedir+"pan_v1")
   plotV = new(2,graphic)
   tempvar2 = cdfAll(0,:,:)
   tempvar2 = dim_avg_n_Wrap(top5(0:4,:,:),0) - dim_avg_n_Wrap(cdfClm(usermonth+12-1+fmnths:usermonth+12-1+fmnths+fmnths2-1,:,:),0)
@@ -4306,7 +4309,7 @@ if (b.lt.totalDims) then
   delete(wks_pan)
 
 
-  wks_pan = gsn_open_wks(wtype,"pan_v2")
+  wks_pan = gsn_open_wks(wtype,filedir+"pan_v2")
   AKdiff = W_ave(cdfAll,thetime+fmnths,thetime+fmnths+fmnths2-1,AK1,AK2,AK3,AK4) - W_ave(cdfClm,usermonth-1+12+fmnths,usermonth-1+12+fmnths+fmnths2-1,AK1,AK2,AK3,AK4)
   AKdiff2 = W_ave(cdfAll,thetime+fmnths,thetime+fmnths+fmnths2-1,y1,y2,x1,x2) - W_ave(cdfClm,usermonth-1+12+fmnths,usermonth-1+12+fmnths+fmnths2-1,y1,y2,x1,x2)
   res@tiXAxisString = "Actual "+varName+ " Anomaly for "+ monthRangeString2 +" "+useryearString2 + "~C~Red Box Anomaly is "+ sprintf("%6.3f",AKdiff)+" "+varUnits+"." + "~C~Blue Box Anomaly is "+ sprintf("%6.3f",AKdiff2)+" "+varUnits+"."+"~C~(c) University of Alaska Fairbanks"
@@ -4367,7 +4370,7 @@ if (b.lt.totalDims) then
         ;print(ID+","+useryear+","+usermonth+","+exmth+","+fmnths+","+analog_actual_RMS +","+NMME_actual_RMS +","+CFSv2_actual_RMS+","+winner+","+winner2     )
 
 
-        wks_pan = gsn_open_wks(wtype,"pan_v3")
+        wks_pan = gsn_open_wks(wtype,filedir+"pan_v3")
         AKdiff = W_ave(cdfAll,thetime+fmnths,thetime+fmnths+fmnths2-1,AK1,AK2,AK3,AK4) - W_ave(cdfClm,usermonth-1+12+fmnths,usermonth-1+12+fmnths+fmnths2-1,AK1,AK2,AK3,AK4)
         AKdiff2 = W_ave(cdfAll,thetime+fmnths,thetime+fmnths+fmnths2-1,y1,y2,x1,x2) - W_ave(cdfClm,usermonth-1+12+fmnths,usermonth-1+12+fmnths+fmnths2-1,y1,y2,x1,x2)
         res@tiXAxisString = "NMME "+varName+ " Forecast Anomaly for "+ monthRangeString2 +" "+useryearString2+" ~C~(c) University of Alaska Fairbanks~C~ ~C~ "
@@ -4415,7 +4418,7 @@ end do
 f(4,0) = W_ave(cdfAll,thetime-exmth,thetime,y1,y2,x1,x2)
 f(5,0) = useryear
 
-wks_pan = gsn_open_wks(wtype,"pan_s1")
+wks_pan = gsn_open_wks(wtype,filedir+"pan_s1")
 res44                   = True                     ; plot mods desired
 res44 = SetScatterRes("Nothing")
 res44@tiXAxisString ="Analogs = " + YearArray(sortInx(ii)) +", " + YearArray(sortInx(ii+1)) +", " + YearArray(sortInx(ii+2)) +", " + YearArray(sortInx(ii+3)) +", " + YearArray(sortInx(ii+4))
@@ -4463,7 +4466,7 @@ end if
 
 ;exit
 
-wks_pan = gsn_open_wks(wtype,"pan_s2")
+wks_pan = gsn_open_wks(wtype,filedir+"pan_s2")
 res55                   = True                     ; plot mods desired
 res55 = SetScatterRes("Nothing")
 res55@tiXAxisString ="Analogs = " + YearArray(sortInx(ii)) +", " + YearArray(sortInx(ii+1)) +", " + YearArray(sortInx(ii+2)) +", " + YearArray(sortInx(ii+3)) +", " + YearArray(sortInx(ii+4))
@@ -4937,9 +4940,9 @@ end do
   specialCorb = escorc(s1b,s2)
 
 
-  asciiwrite ("matches1.txt" , matchesString)
+  asciiwrite (filedir+"matches1.txt" , matchesString)
   zz = systemfunc("mv -f "+filedir+"matches1.txt "+output_dir+"/matches1.txt")
-  asciiwrite ("specialmatches1.txt" , specialString)
+  asciiwrite (filedir+"specialmatches1.txt" , specialString)
   zz = systemfunc("mv -f "+filedir+"specialmatches1.txt "+output_dir+"/specialmatches1.txt")
 
 
@@ -4963,7 +4966,7 @@ do sr = 0, dimsizes(weightedArray1) - 1
 end do
 
 
-asciiwrite ("matches2.txt" , matchesString2)
+asciiwrite (filedir+"matches2.txt" , matchesString2)
 zz = systemfunc("mv -f "+filedir+"matches2.txt "+output_dir+"/matches2.txt")
 
 
@@ -5144,7 +5147,7 @@ CorString=""
 CorString="Multiple R (no sign)="+sprintf("%5.2f",betaMultRcor)+", R-square="+sprintf("%5.2f",betaMultR2cor)+", SLP R="+sprintf("%5.2f",betaSLPR)+", Z Height R="+sprintf("%5.2f",betaH500R)+", 2-Meter Temp R="+sprintf("%5.2f",betaT2MR)+", T Height R="+sprintf("%5.2f",betaT925R)+", SST R="+sprintf("%5.2f",betaSSTR)+", Sea Ice Extent R="+sprintf("%5.2f",betaSeaIceR)
 
 
-asciiwrite ("correlations.txt" , CorString)
+asciiwrite (filedir+"correlations.txt" , CorString)
 zz = systemfunc("mv -f "+filedir+"correlations.txt "+output_dir+"/correlations.txt")
 
 ;print("")
@@ -5161,7 +5164,7 @@ zz = systemfunc("mv -f "+filedir+"correlations.txt "+output_dir+"/correlations.t
 
 
 
-  wks_pan = gsn_open_wks(wtype,"pan_ice1")
+  wks_pan = gsn_open_wks(wtype,filedir+"pan_ice1")
   myRes = True
   x = new(3,float)
   x = (/1,2,3/)
@@ -5359,7 +5362,7 @@ if (doSpecial.eq.True) then
 
 
 
-  wks_pan = gsn_open_wks(wtypez,"cor_slp_11_a")
+  wks_pan = gsn_open_wks(wtypez,filedir+"cor_slp_11_a")
   res = SetRes1(-1, 1, 0.1,25,210)
   rcor  = Significance(specialAnalysis1,mySLPCorArray)
   copy_VarCoords(slp(0,:,:), rcor)
@@ -5378,7 +5381,7 @@ if (doSpecial.eq.True) then
   zz = systemfunc("rm -f "+output_dir+"/cor_slp_11_a.png")
 
 
-  wks_pan = gsn_open_wks(wtypez,"cor_h500_11_a")
+  wks_pan = gsn_open_wks(wtypez,filedir+"cor_h500_11_a")
   res = SetRes1(-1, 1, 0.1,25,210)
   rcor  = Significance(specialAnalysis1,myH500CorArray)
   copy_VarCoords(h500(0,:,:), rcor)
@@ -5396,7 +5399,7 @@ if (doSpecial.eq.True) then
   zz = systemfunc("convert "+output_dir+"/cor_h500_11_a.png -crop 800x1000+100+0 -quality 80 "+output_dir+"/cor_h500_11.jpg")
   zz = systemfunc("rm -f "+output_dir+"/cor_h500_11_a.png")
 
-  wks_pan = gsn_open_wks(wtypez,"cor_t2m_11_a")
+  wks_pan = gsn_open_wks(wtypez,filedir+"cor_t2m_11_a")
   res = SetRes1(-1, 1, 0.1,25,210)
   rcor  = Significance(specialAnalysis1,myT2MCorArray)
   copy_VarCoords(t2m(0,:,:), rcor)
@@ -5414,7 +5417,7 @@ if (doSpecial.eq.True) then
   zz = systemfunc("convert "+output_dir+"/cor_t2m_11_a.png -crop 800x1000+100+0 -quality 80 "+output_dir+"/cor_t2m_11.jpg")
   zz = systemfunc("rm -f "+output_dir+"/cor_t2m_11_a.png")
 
-  wks_pan = gsn_open_wks(wtypez,"cor_t925_11_a")
+  wks_pan = gsn_open_wks(wtypez,filedir+"cor_t925_11_a")
   res = SetRes1(-1, 1, 0.1,25,210)
   rcor  = Significance(specialAnalysis1,myT925CorArray)
   copy_VarCoords(t925(0,:,:), rcor)
@@ -5435,7 +5438,7 @@ if (doSpecial.eq.True) then
 
 
 
-  wks_pan = gsn_open_wks(wtypez,"cor_sst_11_a")
+  wks_pan = gsn_open_wks(wtypez,filedir+"cor_sst_11_a")
   res = SetRes1(-1, 1, 0.1,25,210)
   rcor  = Significance(specialAnalysis1,mySSTCorArray)
   res@tiXAxisString = "Correlation Significance for "+monthRangeString1+" SST ~C~And "+specialText+" ~C~This is a monthly average "
@@ -5473,7 +5476,7 @@ if (doSpecial.eq.True) then
 
 ;exit;;;
 
-  wks_pan = gsn_open_wks(wtypez,"cor_sum_11_a")
+  wks_pan = gsn_open_wks(wtypez,filedir+"cor_sum_11_a")
   res = SetRes1(0, 2, 0.2,25,210)
   res@tiXAxisString = "Summed Correlation Significance for "+monthRangeString1+" ~C~And "+specialText+" ~C~This is a monthly average "
   if (detrend.eq.0) then
@@ -5527,7 +5530,7 @@ if (doSpecial.eq.True) then
     end do
   end do
 
-  wks_pan = gsn_open_wks(wtypez,"cor_max_11_a")
+  wks_pan = gsn_open_wks(wtypez,filedir+"cor_max_11_a")
   res = SetRes1(0, 1, 0.1,25,210)
   res@tiXAxisString = "Max Correlation Significance for "+monthRangeString1+" ~C~And "+specialText+" ~C~This is a monthly average "
   if (detrend.eq.0) then
@@ -5566,7 +5569,7 @@ if (doSpecial.eq.True) then
   end do
 
 
-  wks_pan = gsn_open_wks(wtypez,"cor_max2_11_a")
+  wks_pan = gsn_open_wks(wtypez,filedir+"cor_max2_11_a")
   res = SetRes1(1, 5, 1,25,210)
   res@lbLabelAlignment = "ExternalEdges"
   res@cnLevels              =  (/1.8,2.8,3.8,4.8/)
@@ -5608,7 +5611,7 @@ if (doSpecial.eq.True) then
 
 
 
-wks_pan = gsn_open_wks(wtype,"special_plot")
+wks_pan = gsn_open_wks(wtype,filedir+"special_plot")
 
 res55                   = True                     ; plot mods desired
 res55 = SetScatterRes("Nothing")
@@ -5637,7 +5640,7 @@ delete(plotr)
 delete(wks_pan)
 
 
-wks_pan = gsn_open_wks(wtype,"special_plot2")
+wks_pan = gsn_open_wks(wtype,filedir+"special_plot2")
 
 res55                   = True                     ; plot mods desired
 res55 = SetScatterRes("Nothing")

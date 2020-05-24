@@ -24,34 +24,37 @@
 
 
 <?php
-$meta1 = file('http://data.61n150w.com/maps/text1.txt');
-$meta2 = file('http://data.61n150w.com/maps/text1a.txt');
-$analogyears = file('http://data.61n150w.com/maps/text2.txt');
-$weight = file('http://data.61n150w.com/maps/text3.txt');
-$month1 = file('http://data.61n150w.com/maps/month1.txt');
-$mtext1 = file('http://data.61n150w.com/maps/mtext1.txt');
-$mtext2 = file('http://data.61n150w.com/maps/mtext2.txt');
-$var1 = file('http://data.61n150w.com/maps/var.txt');
-$year1 = file('http://data.61n150w.com/maps/year1.txt');
-$year2 = file('http://data.61n150w.com/maps/year2.txt');
-$year3 = file('http://data.61n150w.com/maps/year3.txt');
-$year4 = file('http://data.61n150w.com/maps/year4.txt');
-$year5 = file('http://data.61n150w.com/maps/year5.txt');
-$my1 = file('http://data.61n150w.com/maps/my1.txt');
-$my2 = file('http://data.61n150w.com/maps/my2.txt');
-$useryear1 = file('http://data.61n150w.com/maps/useryear1.txt');
-$useryear2 = file('http://data.61n150w.com/maps/useryear2.txt');
-$verstr = file('http://data.61n150w.com/maps/verstr.txt');
-$compstr = file('http://data.61n150w.com/maps/compstr.txt');
-$correlations = file('http://data.61n150w.com/maps/correlations.txt');
-$slpyears = file('http://data.61n150w.com/maps/slpyears.txt');
-$h500years = file('http://data.61n150w.com/maps/h500years.txt');
-$t2myears = file('http://data.61n150w.com/maps/t2myears.txt');
-$t925years = file('http://data.61n150w.com/maps/t925years.txt');
-$sstyears = file('http://data.61n150w.com/maps/sstyears.txt');
-$iceyears = file('http://data.61n150w.com/maps/iceyears.txt');
-$heightlev = file('http://data.61n150w.com/maps/heightlevel.txt');
-$templev = file('http://data.61n150w.com/maps/templevel.txt');
+
+$prefix = "./outputs/";
+
+$meta1 = file($prefix . '/text1.txt');
+$meta2 = file($prefix . 'text1a.txt');
+$analogyears = file($prefix . 'text2.txt');
+$weight = file($prefix . 'text3.txt');
+$month1 = file($prefix . 'month1.txt');
+$mtext1 = file($prefix . 'mtext1.txt');
+$mtext2 = file($prefix . 'mtext2.txt');
+$var1 = file($prefix . 'var.txt');
+$year1 = file($prefix . 'year1.txt');
+$year2 = file($prefix . 'year2.txt');
+$year3 = file($prefix . 'year3.txt');
+$year4 = file($prefix . 'year4.txt');
+$year5 = file($prefix . 'year5.txt');
+$my1 = file($prefix . 'my1.txt');
+$my2 = file($prefix . 'my2.txt');
+$useryear1 = file($prefix . 'useryear1.txt');
+$useryear2 = file($prefix . 'useryear2.txt');
+$verstr = file($prefix . 'verstr.txt');
+$compstr = file($prefix . 'compstr.txt');
+$correlations = file($prefix . 'correlations.txt');
+$slpyears = file($prefix . 'slpyears.txt');
+$h500years = file($prefix . 'h500years.txt');
+$t2myears = file($prefix . 't2myears.txt');
+$t925years = file($prefix . 't925years.txt');
+$sstyears = file($prefix . 'sstyears.txt');
+$iceyears = file($prefix . 'iceyears.txt');
+$heightlev = file($prefix . 'heightlevel.txt');
+$templev = file($prefix . 'templevel.txt');
 ?>
 
 
@@ -75,51 +78,51 @@ $templev = file('http://data.61n150w.com/maps/templevel.txt');
   </tr>
   <tr>
     <td class="tg-yw4l"><font color="ff7a7a"><b>Selected<br><?php echo "<b>$my1[0]</b>";?><br>for Analysis</font><br><br><font color="00cc00"><b>5 Analog<br>Composite<br>Forecast for<br><?php echo "<b>$my2[0]</b></font>";?></b></font><br><br><font color="#7a7aff"><b>Verification</b></font></td>
-    <td class="tg-yw4l" bgcolor="#ff7a7a"><a href="maps/a.png"><img src="maps/a.png" width="150" height="188"></a></td>
-    <td class="tg-yw4l" bgcolor="#00cc00"><a href="maps/b.png"><img src="maps/b.png" width="150" height="188"></a></td>
-    <td class="tg-yw4l" bgcolor="#7a7aff"><a href="maps/v.png"><img src="maps/v.png" width="150" height="188"></a></td>
-    <td class="tg-yw4l" bgcolor="#ccccff"><a href="maps/ice1.png"><img src="maps/ice1.png" width="150" height="150"></a></td>
+    <td class="tg-yw4l" bgcolor="#ff7a7a"><a href="<?php echo($prefix)?>/a.png"><img src="<?php echo($prefix)?>a.png" width="150" height="188"></a></td>
+    <td class="tg-yw4l" bgcolor="#00cc00"><a href="<?php echo($prefix)?>b.png"><img src="<?php echo($prefix)?>b.png" width="150" height="188"></a></td>
+    <td class="tg-yw4l" bgcolor="#7a7aff"><a href="<?php echo($prefix)?>v.png"><img src="<?php echo($prefix)?>v.png" width="150" height="188"></a></td>
+    <td class="tg-yw4l" bgcolor="#ccccff"><a href="<?php echo($prefix)?>ice1.png"><img src="<?php echo($prefix)?>ice1.png" width="150" height="150"></a></td>
   </tr>
   <tr>
     <td class="tg-yw4l"><b>Analog 1:</b><br><?php echo "<b>$year1[0]</b>";?></td>
-    <td class="tg-yw4l" bgcolor="#ffaaaa"><a href="maps/a1.png"><img src="maps/a1.png" width="150" height="188"></a></td>
-    <td class="tg-yw4l" bgcolor="#aaffaa"><a href="maps/b1.png"><img src="maps/b1.png" width="150" height="188"></a></td>
-    <td class="tg-yw4l" bgcolor="#7a7aff"><a href="maps/v3.png"><img src="maps/v3.png" width="150" height="188"></a></td>
+    <td class="tg-yw4l" bgcolor="#ffaaaa"><a href="<?php echo($prefix)?>a1.png"><img src="<?php echo($prefix)?>a1.png" width="150" height="188"></a></td>
+    <td class="tg-yw4l" bgcolor="#aaffaa"><a href="<?php echo($prefix)?>b1.png"><img src="<?php echo($prefix)?>b1.png" width="150" height="188"></a></td>
+    <td class="tg-yw4l" bgcolor="#7a7aff"><a href="<?php echo($prefix)?>v3.png"><img src="<?php echo($prefix)?>v3.png" width="150" height="188"></a></td>
     <td class="tg-yw4l"></td>
   </tr>
   <tr>
     <td class="tg-yw4l"><b>Analog 2:</b><br><?php echo "<b>$year2[0]</b>";?></td>
-    <td class="tg-yw4l" bgcolor="#ffaaaa"><a href="maps/a2.png"><img src="maps/a2.png" width="150" height="188"></a></td>
-    <td class="tg-yw4l" bgcolor="#aaffaa"><a href="maps/b2.png"><img src="maps/b2.png" width="150" height="188"></a></td>
+    <td class="tg-yw4l" bgcolor="#ffaaaa"><a href="<?php echo($prefix)?>a2.png"><img src="<?php echo($prefix)?>a2.png" width="150" height="188"></a></td>
+    <td class="tg-yw4l" bgcolor="#aaffaa"><a href="<?php echo($prefix)?>b2.png"><img src="<?php echo($prefix)?>b2.png" width="150" height="188"></a></td>
     <td class="tg-yw4l"><?php echo "<b>$verstr[0]</b>";?></td>
     <td class="tg-yw4l"></td>
   </tr>
   <tr>
     <td class="tg-yw4l"><b>Analog 3:</b><br><?php echo "<b>$year3[0]</b>";?></td>
-    <td class="tg-yw4l" bgcolor="#ffaaaa"><a href="maps/a3.png"><img src="maps/a3.png" width="150" height="188"></a></td>
-    <td class="tg-yw4l" bgcolor="#aaffaa"><a href="maps/b3.png"><img src="maps/b3.png" width="150" height="188"></a></td>
+    <td class="tg-yw4l" bgcolor="#ffaaaa"><a href="<?php echo($prefix)?>a3.png"><img src="<?php echo($prefix)?>a3.png" width="150" height="188"></a></td>
+    <td class="tg-yw4l" bgcolor="#aaffaa"><a href="<?php echo($prefix)?>b3.png"><img src="<?php echo($prefix)?>b3.png" width="150" height="188"></a></td>
     <td class="tg-yw4l"><?php echo "<b>$compstr[0]</b>";?></td>
     <td class="tg-yw4l"></td>
   </tr>
   <tr>
     <td class="tg-yw4l"><b>Analog 4:</b><br><?php echo "<b>$year4[0]</b>";?></td>
-    <td class="tg-yw4l" bgcolor="#ffaaaa"><a href="maps/a4.png"><img src="maps/a4.png" width="150" height="188"></a></td>
-    <td class="tg-yw4l" bgcolor="#aaffaa"><a href="maps/b4.png"><img src="maps/b4.png" width="150" height="188"></a></td>
+    <td class="tg-yw4l" bgcolor="#ffaaaa"><a href="<?php echo($prefix)?>a4.png"><img src="<?php echo($prefix)?>a4.png" width="150" height="188"></a></td>
+    <td class="tg-yw4l" bgcolor="#aaffaa"><a href="<?php echo($prefix)?>b4.png"><img src="<?php echo($prefix)?>b4.png" width="150" height="188"></a></td>
     <td class="tg-yw4l"></td>
     <td class="tg-yw4l"></td>
   </tr>
   <tr>
     <td class="tg-yw4l"><b>Analog 5:</b><br><?php echo "<b>$year5[0]</b>";?></td>
-    <td class="tg-yw4l" bgcolor="#ffaaaa"><a href="maps/a5.png"><img src="maps/a5.png" width="150" height="188"></a></td>
-    <td class="tg-yw4l" bgcolor="#aaffaa"><a href="maps/b5.png"><img src="maps/b5.png" width="150" height="188"></a></td>
+    <td class="tg-yw4l" bgcolor="#ffaaaa"><a href="<?php echo($prefix)?>a5.png"><img src="<?php echo($prefix)?>a5.png" width="150" height="188"></a></td>
+    <td class="tg-yw4l" bgcolor="#aaffaa"><a href="<?php echo($prefix)?>b5.png"><img src="<?php echo($prefix)?>b5.png" width="150" height="188"></a></td>
     <td class="tg-yw4l"></td>
     <td class="tg-yw4l"></td>
   </tr>
   <tr>
     <td class="tg-yw4l"><b>All Years</b></td>
-    <td class="tg-yw4l">Click <a href="maps/matches1.txt">HERE</a> to see the pattern match ranking for all years.</td>
+    <td class="tg-yw4l">Click <a href="<?php echo($prefix)?>matches1.txt">HERE</a> to see the pattern match ranking for all years.</td>
     <td class="tg-yw4l"></td>
-    <td class="tg-yw4l">Click <a href="maps/matches2.txt">HERE</a> to see the verification ranking for all years.</td>
+    <td class="tg-yw4l">Click <a href="<?php echo($prefix)?>matches2.txt">HERE</a> to see the verification ranking for all years.</td>
     <td class="tg-yw4l"></td>
   </tr>
   <tr>
