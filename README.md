@@ -1,23 +1,28 @@
 # Analog forecast tool
 
-## Experimental Arctic Prediction Initiative
+## Installing NCL
 
-Codebase for running the Analog forecast tool.
+Install NCL=6.3.0 (hard version requirement, newer breaks this code) with `conda` [per recommendations](http://ncl.ucar.edu/Download/conda.shtml).
+Install `imagemagick`.
 
-When deployed, the process running PHP needs to have these env vars available:
+If not using a `conda` environment, more of these things may be needed:
 
- * `NCL_HOME` - absolute path, no trailing slash, to the folder containing the `ncl-6.3.0` folder.
+-   set `$NCARG_ROOT` to the path to the ncl-6.3.0
+-   add `$NCARG_ROOT/bin` to `$PATH`
 
-### Setup
+Use the `dir_setup.sh` script to prepare directories if needed and fetch initial copies of the data.
 
-System changes for setting up VM to run NCL.
+Crucial environment variables to set:
+NCL_OUTPUT_DIR is where the final output files are written
+^ change to EAPI?
+todo : need an env var for `filedir`
 
-NCL installation:
-1. run `ncl_install` script from $HOME
-2. `sudo apt-get install libssh2-1`
-3. `sudo apt-get install libfontconfig` (`y` at prompt)
-4. `sudo apt-get install libxrender1`
-5. `sudo apt-get install libgfortran3` (`y` at prompt)
-6. `sudo apt-get install libgomp1`
-7. `sudo apt-get install imagemagick` (`y` at prompt)
+<!-- make $NCARG_ROOT/lib/ncarg/data/downloads
+download the data found in the dir_setup shell script to this folder, pay attention to renaming (one file has duplicate name I think)
+copy $NCARG_ROOT/lib/ncarg/data/csv/parameters1.csv to something like parameters1_original.csv if you want to preserve original params. -->
 
+remove all but one line from \$NCARG_ROOT/lib/ncarg/data/csv/parameters1.csv. This remaining line will serve as the params used when you call the .ncl script.
+
+# Not sure if the sudo/env stuff will be necessary for you
+
+sudo -E env "PATH=\$PATH" ncl eapi-analogs/SeaIceSelectPercents4bRMS.ncl

@@ -27,11 +27,10 @@
 
 $prefix = "./outputs/";
 
-$meta1 = file($prefix . '/text1.txt');
+$meta1 = file($prefix . 'text1.txt');
 $meta2 = file($prefix . 'text1a.txt');
 $analogyears = file($prefix . 'text2.txt');
 $weight = file($prefix . 'text3.txt');
-$month1 = file($prefix . 'month1.txt');
 $mtext1 = file($prefix . 'mtext1.txt');
 $mtext2 = file($prefix . 'mtext2.txt');
 $var1 = file($prefix . 'var.txt');
