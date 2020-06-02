@@ -2,5 +2,5 @@
 .DS_Store
 ._*
 
-# ignore csv data if needed, only 3 MB on disk
-# csv/
+
+outputs/
