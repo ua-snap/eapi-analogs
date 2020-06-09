@@ -1,6 +1,8 @@
 #!/bin/bash
 # download data, overwriting current files
 # sst.mnmean.v5.nc
+set -x
+
 TEMP_FP=$NCARG_ROOT/lib/ncarg/data/downloads/sst.mnmean.v5.nc
 wget -O $TEMP_FP ftp://ftp.cdc.noaa.gov/Datasets/noaa.ersst.v5/sst.mnmean.nc
 # air.mon.mean.nc
